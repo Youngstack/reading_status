@@ -129,13 +129,10 @@ def generate_html(reading_data, output_file="index.html"):
     # 格式化 last_updated，只显示日期
     if last_updated_raw:
         try:
-            # 尝试解析时间戳，只保留日期部分
             if 'T' in last_updated_raw or ' ' in last_updated_raw:
-                # ISO 格式或带时间的格式
                 dt = datetime.fromisoformat(last_updated_raw.replace('Z', '+00:00'))
                 last_updated = dt.strftime('%Y-%m-%d')
             else:
-                # 已经是日期格式
                 last_updated = last_updated_raw.split()[0] if ' ' in last_updated_raw else last_updated_raw
         except:
             last_updated = last_updated_raw.split()[0] if last_updated_raw and ' ' in last_updated_raw else last_updated_raw
@@ -173,7 +170,7 @@ def generate_html(reading_data, output_file="index.html"):
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="我的阅读记录 - Kindle 风格">
+    <meta name="description" content="我的阅读记录 - GitHub 风格">
     <title>阅读记录</title>
     <style>
         * {{
@@ -183,76 +180,80 @@ def generate_html(reading_data, output_file="index.html"):
         }}
         
         :root {{
-            /* Kindle 经典配色 */
-            --bg-primary: #f4f1ea;
-            --bg-secondary: #ffffff;
-            --text-primary: #1a1a1a;
-            --text-secondary: #666666;
-            --text-tertiary: #999999;
-            --border-color: #d4d4d4;
-            --accent: #1a1a1a;
-            --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            /* 🍏 全面对齐 GitHub 经典暗黑风格极客配色 */
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --text-primary: #e6edf3;
+            --text-secondary: #7d8590;
+            --text-tertiary: #6e7681;
+            --border-color: #30363d;
+            --accent: #58a6ff;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            
+            /* GitHub 经典绿墙色阶 */
+            --color-calendar-graph-day-bg: #161b22;
+            --color-calendar-graph-day-read-bg: #39d353; /* 标准打卡绿 */
         }}
         
         body {{
-            font-family: 'Georgia', 'Times New Roman', 'STSong', 'SimSun', serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
             background-color: var(--bg-primary);
             color: var(--text-primary);
-            line-height: 1.8;
+            line-height: 1.6;
             padding: 2rem 1rem;
         }}
         
         .container {{
             max-width: 1100px;
             margin: 0 auto;
-            background: var(--bg-secondary);
-            padding: 4rem 3rem;
-            box-shadow: var(--shadow);
+            background: var(--bg-primary);
+            padding: 2rem 1.5rem;
         }}
         
         header {{
-            text-align: center;
-            margin-bottom: 3rem;
-            padding-bottom: 2rem;
+            text-align: left;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
             border-bottom: 1px solid var(--border-color);
         }}
         
         h1 {{
-            font-size: 2.5rem;
-            font-weight: 500;
-            letter-spacing: 2px;
-            margin-bottom: 1rem;
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
             color: var(--text-primary);
         }}
         
         .subtitle {{
-            font-size: 1rem;
+            font-size: 0.9rem;
             color: var(--text-secondary);
-            font-weight: 500;
-            letter-spacing: 1px;
+            font-weight: 400;
+            letter-spacing: 0.5px;
         }}
         
         /* 中部两栏布局 */
         .main-layout {{
             display: grid;
             grid-template-columns: 1fr 340px;
-            gap: 2.5rem;
-            margin-bottom: 4rem;
+            gap: 2rem;
+            margin-bottom: 3rem;
             align-items: stretch;
         }}
         
         .stats {{
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 1.2rem;
+            gap: 1rem;
             height: 100%;
         }}
         
         .stat-item {{
-            text-align: center;
-            padding: 1.8rem 1rem;
+            text-align: left;
+            padding: 1.5rem;
             border: 1px solid var(--border-color);
-            transition: all 0.3s ease;
+            border-radius: 6px;
+            transition: all 0.2s ease;
             background: var(--bg-secondary);
             display: flex;
             flex-direction: column;
@@ -260,30 +261,30 @@ def generate_html(reading_data, output_file="index.html"):
         }}
         
         .stat-item:hover {{
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-color: #8b949e;
         }}
         
         .stat-label {{
-            font-size: 0.7rem;
-            color: var(--text-primary);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin-bottom: 1rem;
-            font-family: 'Helvetica Neue', 'Arial', sans-serif;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: none;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
         }}
         
         .stat-value {{
-            font-size: 2.8rem;
-            font-weight: 300;
+            font-size: 2.2rem;
+            font-weight: 600;
             color: var(--text-primary);
-            font-family: 'Helvetica Neue', 'Arial', sans-serif;
-            line-height: 1;
+            line-height: 1.1;
         }}
         
         .stat-unit {{
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: var(--text-secondary);
             margin-left: 0.3rem;
+            font-weight: 400;
         }}
         
         /* 单向历样式 */
@@ -296,7 +297,8 @@ def generate_html(reading_data, output_file="index.html"):
         .daily-calendar-wrapper {{
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            padding: 0.05rem;
+            border-radius: 6px;
+            padding: 0.5rem;
             text-align: center;
             height: 100%;
             display: flex;
@@ -311,12 +313,14 @@ def generate_html(reading_data, output_file="index.html"):
             height: 100%;
             object-fit: contain;
             display: block;
+            border-radius: 4px;
             cursor: pointer;
-            transition: transform 0.3s ease;
+            transition: transform 0.2s ease;
+            filter: invert(0.9) hue-rotate(180deg); /* 🌟 暗黑模式适配：反转色温以对齐黑底 */
         }}
         
         .daily-calendar-image:hover {{
-            transform: scale(1.02);
+            transform: scale(1.01);
         }}
         
         .daily-calendar-loading {{
@@ -330,28 +334,30 @@ def generate_html(reading_data, output_file="index.html"):
         }}
         
         .heatmap-section {{
-            margin-bottom: 4rem;
+            margin-bottom: 3rem;
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
         }}
         
         .section-title {{
-            font-size: 1.5rem;
-            font-weight: 400;
-            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
             color: var(--text-primary);
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }}
         
         .section-subtitle {{
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             color: var(--text-secondary);
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }}
         
         .heatmap-wrapper {{
             overflow-x: auto;
-            padding: 1rem 0;
-            margin: 0 -1rem;
-            padding: 1rem;
+            padding: 0.5rem 0;
         }}
         
         .heatmap-wrapper::-webkit-scrollbar {{
@@ -364,12 +370,13 @@ def generate_html(reading_data, output_file="index.html"):
         
         .heatmap-wrapper::-webkit-scrollbar-thumb {{
             background: var(--border-color);
+            border-radius: 3px;
         }}
         
         .heatmap-container {{
             display: inline-grid;
             grid-template-rows: auto 1fr;
-            gap: 8px;
+            gap: 4px;
             min-width: 100%;
         }}
         
@@ -377,14 +384,13 @@ def generate_html(reading_data, output_file="index.html"):
             display: grid;
             grid-template-columns: repeat(53, 1fr);
             gap: 3px;
-            padding-bottom: 4px;
+            padding-bottom: 2px;
         }}
         
         .month-label {{
             font-size: 0.75rem;
-            color: var(--text-tertiary);
+            color: var(--text-secondary);
             text-align: left;
-            font-family: 'Helvetica Neue', 'Arial', sans-serif;
         }}
         
         .heatmap-grid {{
@@ -393,73 +399,75 @@ def generate_html(reading_data, output_file="index.html"):
             grid-auto-flow: column;
             grid-template-rows: repeat(7, 1fr);
             gap: 3px;
-            min-height: 120px;
+            min-height: 100px;
         }}
         
         .day-cell {{
             width: 100%;
             aspect-ratio: 1 / 1;
-            min-width: 11px;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
+            min-width: 10px;
+            background: var(--color-calendar-graph-day-bg);
+            border: 1px solid rgba(27, 31, 35, 0.06);
+            border-radius: 2px; /* GitHub 经典的微圆角 */
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: background-color 0.1s ease;
         }}
         
         .day-cell.read {{
-            background: var(--text-primary);
-            border-color: var(--text-primary);
+            background: var(--color-calendar-graph-day-read-bg);
         }}
         
         .day-cell.future {{
-            opacity: 0.3;
+            background: #0d1117;
+            border: 1px solid var(--border-color);
+            opacity: 0.15;
             cursor: default;
         }}
         
         .day-cell:not(.future):hover {{
-            transform: scale(1.3);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            outline: 2px solid var(--text-primary);
+            outline-offset: -1px;
             z-index: 10;
         }}
         
         footer {{
             text-align: center;
-            padding-top: 3rem;
-            margin-top: 3rem;
+            padding-top: 2rem;
+            margin-top: 2rem;
             border-top: 1px solid var(--border-color);
             color: var(--text-tertiary);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }}
         
         footer a {{
-            color: var(--text-secondary);
+            color: var(--accent);
             text-decoration: none;
-            border-bottom: 1px solid transparent;
-            transition: border-color 0.3s;
+            transition: text-decoration 0.2s;
         }}
         
         footer a:hover {{
-            border-bottom-color: var(--text-secondary);
+            text-decoration: underline;
         }}
         
         .last-updated {{
-            margin-top: 1rem;
-            font-size: 0.8rem;
+            margin-top: 0.75rem;
+            font-size: 0.75rem;
             color: var(--text-tertiary);
         }}
         
-        /* Tooltip */
+        /* GitHub 经典悬浮气泡 */
         .tooltip {{
             position: fixed;
-            background: var(--text-primary);
-            color: var(--bg-secondary);
-            padding: 6px 10px;
-            font-size: 12px;
+            background: #6e7681;
+            color: #ffffff;
+            padding: 5px 8px;
+            font-size: 11px;
+            border-radius: 6px;
             white-space: nowrap;
             pointer-events: none;
             z-index: 1000;
-            font-family: 'Helvetica Neue', 'Arial', sans-serif;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            font-weight: 500;
+            box-shadow: var(--shadow);
         }}
         
         @media (max-width: 1024px) {{
@@ -469,37 +477,27 @@ def generate_html(reading_data, output_file="index.html"):
             
             .daily-calendar {{
                 order: -1;
-                margin-bottom: 3rem;
-                min-height: 400px;
+                margin-bottom: 2rem;
+                min-height: 350px;
             }}
         }}
         
         @media (max-width: 768px) {{
             .container {{
-                padding: 2rem 1.5rem;
+                padding: 1rem;
             }}
             
             h1 {{
-                font-size: 2rem;
+                font-size: 1.6rem;
             }}
             
             .stats {{
                 grid-template-columns: repeat(2, 1fr);
-                gap: 1rem;
+                gap: 0.75rem;
             }}
             
             .stat-value {{
-                font-size: 2rem;
-            }}
-        }}
-        
-        @media print {{
-            body {{
-                background: white;
-            }}
-            
-            .container {{
-                box-shadow: none;
+                font-size: 1.8rem;
             }}
         }}
     </style>
@@ -508,40 +506,40 @@ def generate_html(reading_data, output_file="index.html"):
     <div class="container">
         <header>
             <h1>阅读记录</h1>
-            <p class="subtitle">Reading Journal</p>
+            <p class="subtitle">Reading Activity Journal</p>
         </header>
         
         <div class="main-layout">
             <div class="stats">
                 <div class="stat-item">
                     <div class="stat-label">Total Days</div>
-                    <div class="stat-value">{stats['total_days']}<span class="stat-unit">天</span></div>
+                    <div class="stat-value">{stats['total_days']}<span class="stat-unit">days</span></div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-label">This Month</div>
-                    <div class="stat-value">{stats['this_month_days']}<span class="stat-unit">天</span></div>
+                    <div class="stat-value">{stats['this_month_days']}<span class="stat-unit">days</span></div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-label">Current Streak</div>
-                    <div class="stat-value">{stats['current_streak']}<span class="stat-unit">天</span></div>
+                    <div class="stat-value">{stats['current_streak']}<span class="stat-unit">days</span></div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-label">Longest Streak</div>
-                    <div class="stat-value">{stats['longest_streak']}<span class="stat-unit">天</span></div>
+                    <div class="stat-value">{stats['longest_streak']}<span class="stat-unit">days</span></div>
                 </div>
             </div>
             
             <div class="daily-calendar">
                 <div class="daily-calendar-wrapper" id="dailyCalendarWrapper">
                     <div id="dailyCalendarContent" class="daily-calendar-loading">
-                        加载中...
+                        Loading...
                     </div>
                 </div>
             </div>
         </div>
         
         <section class="heatmap-section">
-            <h2 class="section-title">全年阅读活动</h2>
+            <h2 class="section-title">Contribution Graph</h2>
             <p class="section-subtitle">过去一年共阅读 {stats['this_year_days']} 天</p>
             
             <div class="heatmap-wrapper">
@@ -572,7 +570,6 @@ def generate_html(reading_data, output_file="index.html"):
             var mm = m > 9 ? m : "0" + m;
             var dd = n > 9 ? n : "0" + n;
             
-            // 备用图片源 - 尝试多种可能的 URL 格式
             var imgSources = [
                 "https://img.owspace.com/Public/uploads/Download/" + y + "/" + mm + dd + ".jpg",
                 "https://img.owspace.com/Public/uploads/Download/" + y + "/" + m + n + ".jpg"
@@ -582,11 +579,10 @@ def generate_html(reading_data, output_file="index.html"):
             
             function tryLoadImage(index) {{
                 if (index >= imgSources.length) {{
-                    // 所有源都失败，显示默认内容
                     document.getElementById("dailyCalendarContent").innerHTML = 
                         '<div class="daily-calendar-loading" style="padding: 3rem 1rem; text-align: center;">' +
                         '<p style="font-size: 3rem; margin-bottom: 1rem;">📚</p>' +
-                        '<p style="font-size: 1.2rem; margin-bottom: 0.5rem;">' + y + ' 年 ' + parseInt(m) + ' 月 ' + parseInt(n) + ' 日</p>' +
+                        '<p style="font-size: 1.2rem; margin-bottom: 0.5rem; color: var(--text-primary);">' + y + ' 年 ' + parseInt(m) + ' 月 ' + parseInt(n) + ' 日</p>' +
                         '<p style="font-size: 0.85rem; color: var(--text-tertiary); margin-top: 1rem;">Keep Reading · Keep Growing</p>' +
                         '</div>';
                     return;
@@ -605,7 +601,6 @@ def generate_html(reading_data, output_file="index.html"):
             }}
         }}
         
-        // 页面加载时执行
         window.onload = function() {{
             loadDailyCalendar();
         }};
@@ -618,7 +613,7 @@ def generate_html(reading_data, output_file="index.html"):
                 tooltip.className = 'tooltip';
                 tooltip.textContent = e.target.getAttribute('title');
                 tooltip.style.cssText = `
-                    top: ${{rect.top - 30}}px;
+                    top: ${{rect.top - 28}}px;
                     left: ${{rect.left + rect.width / 2}}px;
                     transform: translateX(-50%);
                 `;
