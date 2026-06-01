@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="我的阅读记录 - GitHub 风格">
+    <meta name="description" content="我的阅读记录 - GitHub 自然年绿墙风格">
     <title>阅读记录</title>
     <style>
         * {
@@ -13,7 +13,7 @@
         }
         
         :root {
-            /* 🍏 全面对齐 GitHub 经典暗黑风格极客配色 */
+            /* 🍏 全面对齐 GitHub 经典暗黑极客配色 */
             --bg-primary: #0d1117;
             --bg-secondary: #161b22;
             --text-primary: #e6edf3;
@@ -23,13 +23,13 @@
             --accent: #58a6ff;
             --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
             
-            /* GitHub 经典绿墙色阶 */
+            /* GitHub 经典色阶 */
             --color-calendar-graph-day-bg: #161b22;
-            --color-calendar-graph-day-read-bg: #39d353; /* 标准打卡绿 */
+            --color-calendar-graph-day-read-bg: #39d353;
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
             background-color: var(--bg-primary);
             color: var(--text-primary);
             line-height: 1.6;
@@ -65,7 +65,6 @@
             letter-spacing: 0.5px;
         }
         
-        /* 中部两栏布局 */
         .main-layout {
             display: grid;
             grid-template-columns: 1fr 340px;
@@ -101,9 +100,8 @@
             font-size: 0.75rem;
             color: var(--text-secondary);
             font-weight: 500;
-            text-transform: none;
-            letter-spacing: 0.5px;
             margin-bottom: 0.5rem;
+            letter-spacing: 0.5px;
         }
         
         .stat-value {
@@ -120,7 +118,6 @@
             font-weight: 400;
         }
         
-        /* 单向历样式 */
         .daily-calendar {
             height: 100%;
             display: flex;
@@ -149,7 +146,7 @@
             border-radius: 4px;
             cursor: pointer;
             transition: transform 0.2s ease;
-            filter: invert(0.9) hue-rotate(180deg); /* 🌟 暗黑模式适配：反转色温以对齐黑底 */
+            filter: invert(0.9) hue-rotate(180deg); /* 🌟 物理滤镜：智能化反转白底，完美融入黑暗风 */
         }
         
         .daily-calendar-image:hover {
@@ -240,8 +237,8 @@
             aspect-ratio: 1 / 1;
             min-width: 10px;
             background: var(--color-calendar-graph-day-bg);
-            border: 1px solid rgba(27, 31, 35, 0.06);
-            border-radius: 2px; /* GitHub 经典的微圆角 */
+            border: 1px solid rgba(27, 31, 35, 0.04);
+            border-radius: 2px;
             cursor: pointer;
             transition: background-color 0.1s ease;
         }
@@ -253,7 +250,7 @@
         .day-cell.future {
             background: #0d1117;
             border: 1px solid var(--border-color);
-            opacity: 0.15;
+            opacity: 0.12;
             cursor: default;
         }
         
@@ -275,7 +272,6 @@
         footer a {
             color: var(--accent);
             text-decoration: none;
-            transition: text-decoration 0.2s;
         }
         
         footer a:hover {
@@ -288,7 +284,6 @@
             color: var(--text-tertiary);
         }
         
-        /* GitHub 经典悬浮气泡 */
         .tooltip {
             position: fixed;
             background: #6e7681;
@@ -307,7 +302,6 @@
             .main-layout {
                 grid-template-columns: 1fr;
             }
-            
             .daily-calendar {
                 order: -1;
                 margin-bottom: 2rem;
@@ -316,22 +310,10 @@
         }
         
         @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-            
-            h1 {
-                font-size: 1.6rem;
-            }
-            
-            .stats {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 0.75rem;
-            }
-            
-            .stat-value {
-                font-size: 1.8rem;
-            }
+            .container { padding: 1rem; }
+            h1 { font-size: 1.6rem; }
+            .stats { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+            .stat-value { font-size: 1.8rem; }
         }
     </style>
 </head>
@@ -373,239 +355,29 @@
         
         <section class="heatmap-section">
             <h2 class="section-title">Contribution Graph</h2>
-            <p class="section-subtitle">过去一年共阅读 104 天</p>
+            <p class="section-subtitle">今年共阅读 104 天</p>
             
             <div class="heatmap-wrapper">
                 <div class="heatmap-container">
 <div class="heatmap-months">
-  <div class="month-label" style="grid-column: 1;">Jun</div>
-  <div class="month-label" style="grid-column: 6;">Jul</div>
-  <div class="month-label" style="grid-column: 10;">Aug</div>
-  <div class="month-label" style="grid-column: 14;">Sep</div>
-  <div class="month-label" style="grid-column: 19;">Oct</div>
-  <div class="month-label" style="grid-column: 23;">Nov</div>
-  <div class="month-label" style="grid-column: 27;">Dec</div>
-  <div class="month-label" style="grid-column: 32;">Jan</div>
-  <div class="month-label" style="grid-column: 36;">Feb</div>
-  <div class="month-label" style="grid-column: 40;">Mar</div>
-  <div class="month-label" style="grid-column: 45;">Apr</div>
-  <div class="month-label" style="grid-column: 49;">May</div>
-  <div class="month-label" style="grid-column: 53;">Jun</div>
+  <div class="month-label" style="grid-column: 1;">Dec</div>
+  <div class="month-label" style="grid-column: 2;">Jan</div>
+  <div class="month-label" style="grid-column: 6;">Feb</div>
+  <div class="month-label" style="grid-column: 10;">Mar</div>
+  <div class="month-label" style="grid-column: 15;">Apr</div>
+  <div class="month-label" style="grid-column: 19;">May</div>
+  <div class="month-label" style="grid-column: 23;">Jun</div>
+  <div class="month-label" style="grid-column: 28;">Jul</div>
+  <div class="month-label" style="grid-column: 32;">Aug</div>
+  <div class="month-label" style="grid-column: 37;">Sep</div>
+  <div class="month-label" style="grid-column: 41;">Oct</div>
+  <div class="month-label" style="grid-column: 45;">Nov</div>
+  <div class="month-label" style="grid-column: 50;">Dec</div>
 </div>
 <div class="heatmap-grid">
-  <div class="day-cell" title="2025-06-02" data-date="2025-06-02"></div>
-  <div class="day-cell" title="2025-06-03" data-date="2025-06-03"></div>
-  <div class="day-cell" title="2025-06-04" data-date="2025-06-04"></div>
-  <div class="day-cell" title="2025-06-05" data-date="2025-06-05"></div>
-  <div class="day-cell" title="2025-06-06" data-date="2025-06-06"></div>
-  <div class="day-cell" title="2025-06-07" data-date="2025-06-07"></div>
-  <div class="day-cell" title="2025-06-08" data-date="2025-06-08"></div>
-  <div class="day-cell" title="2025-06-09" data-date="2025-06-09"></div>
-  <div class="day-cell" title="2025-06-10" data-date="2025-06-10"></div>
-  <div class="day-cell" title="2025-06-11" data-date="2025-06-11"></div>
-  <div class="day-cell" title="2025-06-12" data-date="2025-06-12"></div>
-  <div class="day-cell" title="2025-06-13" data-date="2025-06-13"></div>
-  <div class="day-cell" title="2025-06-14" data-date="2025-06-14"></div>
-  <div class="day-cell" title="2025-06-15" data-date="2025-06-15"></div>
-  <div class="day-cell" title="2025-06-16" data-date="2025-06-16"></div>
-  <div class="day-cell" title="2025-06-17" data-date="2025-06-17"></div>
-  <div class="day-cell" title="2025-06-18" data-date="2025-06-18"></div>
-  <div class="day-cell" title="2025-06-19" data-date="2025-06-19"></div>
-  <div class="day-cell" title="2025-06-20" data-date="2025-06-20"></div>
-  <div class="day-cell" title="2025-06-21" data-date="2025-06-21"></div>
-  <div class="day-cell" title="2025-06-22" data-date="2025-06-22"></div>
-  <div class="day-cell" title="2025-06-23" data-date="2025-06-23"></div>
-  <div class="day-cell" title="2025-06-24" data-date="2025-06-24"></div>
-  <div class="day-cell" title="2025-06-25" data-date="2025-06-25"></div>
-  <div class="day-cell" title="2025-06-26" data-date="2025-06-26"></div>
-  <div class="day-cell" title="2025-06-27" data-date="2025-06-27"></div>
-  <div class="day-cell" title="2025-06-28" data-date="2025-06-28"></div>
-  <div class="day-cell" title="2025-06-29" data-date="2025-06-29"></div>
-  <div class="day-cell" title="2025-06-30" data-date="2025-06-30"></div>
-  <div class="day-cell" title="2025-07-01" data-date="2025-07-01"></div>
-  <div class="day-cell" title="2025-07-02" data-date="2025-07-02"></div>
-  <div class="day-cell" title="2025-07-03" data-date="2025-07-03"></div>
-  <div class="day-cell" title="2025-07-04" data-date="2025-07-04"></div>
-  <div class="day-cell" title="2025-07-05" data-date="2025-07-05"></div>
-  <div class="day-cell" title="2025-07-06" data-date="2025-07-06"></div>
-  <div class="day-cell" title="2025-07-07" data-date="2025-07-07"></div>
-  <div class="day-cell" title="2025-07-08" data-date="2025-07-08"></div>
-  <div class="day-cell" title="2025-07-09" data-date="2025-07-09"></div>
-  <div class="day-cell" title="2025-07-10" data-date="2025-07-10"></div>
-  <div class="day-cell" title="2025-07-11" data-date="2025-07-11"></div>
-  <div class="day-cell" title="2025-07-12" data-date="2025-07-12"></div>
-  <div class="day-cell" title="2025-07-13" data-date="2025-07-13"></div>
-  <div class="day-cell" title="2025-07-14" data-date="2025-07-14"></div>
-  <div class="day-cell" title="2025-07-15" data-date="2025-07-15"></div>
-  <div class="day-cell" title="2025-07-16" data-date="2025-07-16"></div>
-  <div class="day-cell" title="2025-07-17" data-date="2025-07-17"></div>
-  <div class="day-cell" title="2025-07-18" data-date="2025-07-18"></div>
-  <div class="day-cell" title="2025-07-19" data-date="2025-07-19"></div>
-  <div class="day-cell" title="2025-07-20" data-date="2025-07-20"></div>
-  <div class="day-cell" title="2025-07-21" data-date="2025-07-21"></div>
-  <div class="day-cell" title="2025-07-22" data-date="2025-07-22"></div>
-  <div class="day-cell" title="2025-07-23" data-date="2025-07-23"></div>
-  <div class="day-cell" title="2025-07-24" data-date="2025-07-24"></div>
-  <div class="day-cell" title="2025-07-25" data-date="2025-07-25"></div>
-  <div class="day-cell" title="2025-07-26" data-date="2025-07-26"></div>
-  <div class="day-cell" title="2025-07-27" data-date="2025-07-27"></div>
-  <div class="day-cell" title="2025-07-28" data-date="2025-07-28"></div>
-  <div class="day-cell" title="2025-07-29" data-date="2025-07-29"></div>
-  <div class="day-cell" title="2025-07-30" data-date="2025-07-30"></div>
-  <div class="day-cell" title="2025-07-31" data-date="2025-07-31"></div>
-  <div class="day-cell" title="2025-08-01" data-date="2025-08-01"></div>
-  <div class="day-cell" title="2025-08-02" data-date="2025-08-02"></div>
-  <div class="day-cell" title="2025-08-03" data-date="2025-08-03"></div>
-  <div class="day-cell" title="2025-08-04" data-date="2025-08-04"></div>
-  <div class="day-cell" title="2025-08-05" data-date="2025-08-05"></div>
-  <div class="day-cell" title="2025-08-06" data-date="2025-08-06"></div>
-  <div class="day-cell" title="2025-08-07" data-date="2025-08-07"></div>
-  <div class="day-cell" title="2025-08-08" data-date="2025-08-08"></div>
-  <div class="day-cell" title="2025-08-09" data-date="2025-08-09"></div>
-  <div class="day-cell" title="2025-08-10" data-date="2025-08-10"></div>
-  <div class="day-cell" title="2025-08-11" data-date="2025-08-11"></div>
-  <div class="day-cell" title="2025-08-12" data-date="2025-08-12"></div>
-  <div class="day-cell" title="2025-08-13" data-date="2025-08-13"></div>
-  <div class="day-cell" title="2025-08-14" data-date="2025-08-14"></div>
-  <div class="day-cell" title="2025-08-15" data-date="2025-08-15"></div>
-  <div class="day-cell" title="2025-08-16" data-date="2025-08-16"></div>
-  <div class="day-cell" title="2025-08-17" data-date="2025-08-17"></div>
-  <div class="day-cell" title="2025-08-18" data-date="2025-08-18"></div>
-  <div class="day-cell" title="2025-08-19" data-date="2025-08-19"></div>
-  <div class="day-cell" title="2025-08-20" data-date="2025-08-20"></div>
-  <div class="day-cell" title="2025-08-21" data-date="2025-08-21"></div>
-  <div class="day-cell" title="2025-08-22" data-date="2025-08-22"></div>
-  <div class="day-cell" title="2025-08-23" data-date="2025-08-23"></div>
-  <div class="day-cell" title="2025-08-24" data-date="2025-08-24"></div>
-  <div class="day-cell" title="2025-08-25" data-date="2025-08-25"></div>
-  <div class="day-cell" title="2025-08-26" data-date="2025-08-26"></div>
-  <div class="day-cell" title="2025-08-27" data-date="2025-08-27"></div>
-  <div class="day-cell" title="2025-08-28" data-date="2025-08-28"></div>
-  <div class="day-cell" title="2025-08-29" data-date="2025-08-29"></div>
-  <div class="day-cell" title="2025-08-30" data-date="2025-08-30"></div>
-  <div class="day-cell" title="2025-08-31" data-date="2025-08-31"></div>
-  <div class="day-cell" title="2025-09-01" data-date="2025-09-01"></div>
-  <div class="day-cell" title="2025-09-02" data-date="2025-09-02"></div>
-  <div class="day-cell" title="2025-09-03" data-date="2025-09-03"></div>
-  <div class="day-cell" title="2025-09-04" data-date="2025-09-04"></div>
-  <div class="day-cell" title="2025-09-05" data-date="2025-09-05"></div>
-  <div class="day-cell" title="2025-09-06" data-date="2025-09-06"></div>
-  <div class="day-cell" title="2025-09-07" data-date="2025-09-07"></div>
-  <div class="day-cell" title="2025-09-08" data-date="2025-09-08"></div>
-  <div class="day-cell" title="2025-09-09" data-date="2025-09-09"></div>
-  <div class="day-cell" title="2025-09-10" data-date="2025-09-10"></div>
-  <div class="day-cell" title="2025-09-11" data-date="2025-09-11"></div>
-  <div class="day-cell" title="2025-09-12" data-date="2025-09-12"></div>
-  <div class="day-cell" title="2025-09-13" data-date="2025-09-13"></div>
-  <div class="day-cell" title="2025-09-14" data-date="2025-09-14"></div>
-  <div class="day-cell" title="2025-09-15" data-date="2025-09-15"></div>
-  <div class="day-cell" title="2025-09-16" data-date="2025-09-16"></div>
-  <div class="day-cell" title="2025-09-17" data-date="2025-09-17"></div>
-  <div class="day-cell" title="2025-09-18" data-date="2025-09-18"></div>
-  <div class="day-cell" title="2025-09-19" data-date="2025-09-19"></div>
-  <div class="day-cell" title="2025-09-20" data-date="2025-09-20"></div>
-  <div class="day-cell" title="2025-09-21" data-date="2025-09-21"></div>
-  <div class="day-cell" title="2025-09-22" data-date="2025-09-22"></div>
-  <div class="day-cell" title="2025-09-23" data-date="2025-09-23"></div>
-  <div class="day-cell" title="2025-09-24" data-date="2025-09-24"></div>
-  <div class="day-cell" title="2025-09-25" data-date="2025-09-25"></div>
-  <div class="day-cell" title="2025-09-26" data-date="2025-09-26"></div>
-  <div class="day-cell" title="2025-09-27" data-date="2025-09-27"></div>
-  <div class="day-cell" title="2025-09-28" data-date="2025-09-28"></div>
-  <div class="day-cell" title="2025-09-29" data-date="2025-09-29"></div>
-  <div class="day-cell" title="2025-09-30" data-date="2025-09-30"></div>
-  <div class="day-cell" title="2025-10-01" data-date="2025-10-01"></div>
-  <div class="day-cell" title="2025-10-02" data-date="2025-10-02"></div>
-  <div class="day-cell" title="2025-10-03" data-date="2025-10-03"></div>
-  <div class="day-cell" title="2025-10-04" data-date="2025-10-04"></div>
-  <div class="day-cell" title="2025-10-05" data-date="2025-10-05"></div>
-  <div class="day-cell" title="2025-10-06" data-date="2025-10-06"></div>
-  <div class="day-cell" title="2025-10-07" data-date="2025-10-07"></div>
-  <div class="day-cell" title="2025-10-08" data-date="2025-10-08"></div>
-  <div class="day-cell" title="2025-10-09" data-date="2025-10-09"></div>
-  <div class="day-cell" title="2025-10-10" data-date="2025-10-10"></div>
-  <div class="day-cell" title="2025-10-11" data-date="2025-10-11"></div>
-  <div class="day-cell" title="2025-10-12" data-date="2025-10-12"></div>
-  <div class="day-cell" title="2025-10-13" data-date="2025-10-13"></div>
-  <div class="day-cell" title="2025-10-14" data-date="2025-10-14"></div>
-  <div class="day-cell" title="2025-10-15" data-date="2025-10-15"></div>
-  <div class="day-cell" title="2025-10-16" data-date="2025-10-16"></div>
-  <div class="day-cell" title="2025-10-17" data-date="2025-10-17"></div>
-  <div class="day-cell" title="2025-10-18" data-date="2025-10-18"></div>
-  <div class="day-cell" title="2025-10-19" data-date="2025-10-19"></div>
-  <div class="day-cell" title="2025-10-20" data-date="2025-10-20"></div>
-  <div class="day-cell" title="2025-10-21" data-date="2025-10-21"></div>
-  <div class="day-cell" title="2025-10-22" data-date="2025-10-22"></div>
-  <div class="day-cell" title="2025-10-23" data-date="2025-10-23"></div>
-  <div class="day-cell" title="2025-10-24" data-date="2025-10-24"></div>
-  <div class="day-cell" title="2025-10-25" data-date="2025-10-25"></div>
-  <div class="day-cell" title="2025-10-26" data-date="2025-10-26"></div>
-  <div class="day-cell" title="2025-10-27" data-date="2025-10-27"></div>
-  <div class="day-cell" title="2025-10-28" data-date="2025-10-28"></div>
-  <div class="day-cell" title="2025-10-29" data-date="2025-10-29"></div>
-  <div class="day-cell" title="2025-10-30" data-date="2025-10-30"></div>
-  <div class="day-cell" title="2025-10-31" data-date="2025-10-31"></div>
-  <div class="day-cell" title="2025-11-01" data-date="2025-11-01"></div>
-  <div class="day-cell" title="2025-11-02" data-date="2025-11-02"></div>
-  <div class="day-cell" title="2025-11-03" data-date="2025-11-03"></div>
-  <div class="day-cell" title="2025-11-04" data-date="2025-11-04"></div>
-  <div class="day-cell" title="2025-11-05" data-date="2025-11-05"></div>
-  <div class="day-cell" title="2025-11-06" data-date="2025-11-06"></div>
-  <div class="day-cell" title="2025-11-07" data-date="2025-11-07"></div>
-  <div class="day-cell" title="2025-11-08" data-date="2025-11-08"></div>
-  <div class="day-cell" title="2025-11-09" data-date="2025-11-09"></div>
-  <div class="day-cell" title="2025-11-10" data-date="2025-11-10"></div>
-  <div class="day-cell" title="2025-11-11" data-date="2025-11-11"></div>
-  <div class="day-cell" title="2025-11-12" data-date="2025-11-12"></div>
-  <div class="day-cell" title="2025-11-13" data-date="2025-11-13"></div>
-  <div class="day-cell" title="2025-11-14" data-date="2025-11-14"></div>
-  <div class="day-cell" title="2025-11-15" data-date="2025-11-15"></div>
-  <div class="day-cell" title="2025-11-16" data-date="2025-11-16"></div>
-  <div class="day-cell" title="2025-11-17" data-date="2025-11-17"></div>
-  <div class="day-cell" title="2025-11-18" data-date="2025-11-18"></div>
-  <div class="day-cell" title="2025-11-19" data-date="2025-11-19"></div>
-  <div class="day-cell" title="2025-11-20" data-date="2025-11-20"></div>
-  <div class="day-cell" title="2025-11-21" data-date="2025-11-21"></div>
-  <div class="day-cell" title="2025-11-22" data-date="2025-11-22"></div>
-  <div class="day-cell" title="2025-11-23" data-date="2025-11-23"></div>
-  <div class="day-cell" title="2025-11-24" data-date="2025-11-24"></div>
-  <div class="day-cell" title="2025-11-25" data-date="2025-11-25"></div>
-  <div class="day-cell" title="2025-11-26" data-date="2025-11-26"></div>
-  <div class="day-cell" title="2025-11-27" data-date="2025-11-27"></div>
-  <div class="day-cell" title="2025-11-28" data-date="2025-11-28"></div>
-  <div class="day-cell" title="2025-11-29" data-date="2025-11-29"></div>
-  <div class="day-cell" title="2025-11-30" data-date="2025-11-30"></div>
-  <div class="day-cell" title="2025-12-01" data-date="2025-12-01"></div>
-  <div class="day-cell" title="2025-12-02" data-date="2025-12-02"></div>
-  <div class="day-cell" title="2025-12-03" data-date="2025-12-03"></div>
-  <div class="day-cell" title="2025-12-04" data-date="2025-12-04"></div>
-  <div class="day-cell" title="2025-12-05" data-date="2025-12-05"></div>
-  <div class="day-cell" title="2025-12-06" data-date="2025-12-06"></div>
-  <div class="day-cell" title="2025-12-07" data-date="2025-12-07"></div>
-  <div class="day-cell" title="2025-12-08" data-date="2025-12-08"></div>
-  <div class="day-cell" title="2025-12-09" data-date="2025-12-09"></div>
-  <div class="day-cell" title="2025-12-10" data-date="2025-12-10"></div>
-  <div class="day-cell" title="2025-12-11" data-date="2025-12-11"></div>
-  <div class="day-cell" title="2025-12-12" data-date="2025-12-12"></div>
-  <div class="day-cell" title="2025-12-13" data-date="2025-12-13"></div>
-  <div class="day-cell" title="2025-12-14" data-date="2025-12-14"></div>
-  <div class="day-cell" title="2025-12-15" data-date="2025-12-15"></div>
-  <div class="day-cell" title="2025-12-16" data-date="2025-12-16"></div>
-  <div class="day-cell" title="2025-12-17" data-date="2025-12-17"></div>
-  <div class="day-cell" title="2025-12-18" data-date="2025-12-18"></div>
-  <div class="day-cell" title="2025-12-19" data-date="2025-12-19"></div>
-  <div class="day-cell" title="2025-12-20" data-date="2025-12-20"></div>
-  <div class="day-cell" title="2025-12-21" data-date="2025-12-21"></div>
-  <div class="day-cell" title="2025-12-22" data-date="2025-12-22"></div>
-  <div class="day-cell" title="2025-12-23" data-date="2025-12-23"></div>
-  <div class="day-cell" title="2025-12-24" data-date="2025-12-24"></div>
-  <div class="day-cell" title="2025-12-25" data-date="2025-12-25"></div>
-  <div class="day-cell" title="2025-12-26" data-date="2025-12-26"></div>
-  <div class="day-cell" title="2025-12-27" data-date="2025-12-27"></div>
-  <div class="day-cell" title="2025-12-28" data-date="2025-12-28"></div>
-  <div class="day-cell" title="2025-12-29" data-date="2025-12-29"></div>
-  <div class="day-cell" title="2025-12-30" data-date="2025-12-30"></div>
-  <div class="day-cell" title="2025-12-31" data-date="2025-12-31"></div>
+  <div class="day-cell future" title="2025-12-29" data-date="2025-12-29"></div>
+  <div class="day-cell future" title="2025-12-30" data-date="2025-12-30"></div>
+  <div class="day-cell future" title="2025-12-31" data-date="2025-12-31"></div>
   <div class="day-cell" title="2026-01-01" data-date="2026-01-01"></div>
   <div class="day-cell" title="2026-01-02" data-date="2026-01-02"></div>
   <div class="day-cell" title="2026-01-03" data-date="2026-01-03"></div>
@@ -764,6 +536,216 @@
   <div class="day-cell future" title="2026-06-05" data-date="2026-06-05"></div>
   <div class="day-cell future" title="2026-06-06" data-date="2026-06-06"></div>
   <div class="day-cell future" title="2026-06-07" data-date="2026-06-07"></div>
+  <div class="day-cell future" title="2026-06-08" data-date="2026-06-08"></div>
+  <div class="day-cell future" title="2026-06-09" data-date="2026-06-09"></div>
+  <div class="day-cell future" title="2026-06-10" data-date="2026-06-10"></div>
+  <div class="day-cell future" title="2026-06-11" data-date="2026-06-11"></div>
+  <div class="day-cell future" title="2026-06-12" data-date="2026-06-12"></div>
+  <div class="day-cell future" title="2026-06-13" data-date="2026-06-13"></div>
+  <div class="day-cell future" title="2026-06-14" data-date="2026-06-14"></div>
+  <div class="day-cell future" title="2026-06-15" data-date="2026-06-15"></div>
+  <div class="day-cell future" title="2026-06-16" data-date="2026-06-16"></div>
+  <div class="day-cell future" title="2026-06-17" data-date="2026-06-17"></div>
+  <div class="day-cell future" title="2026-06-18" data-date="2026-06-18"></div>
+  <div class="day-cell future" title="2026-06-19" data-date="2026-06-19"></div>
+  <div class="day-cell future" title="2026-06-20" data-date="2026-06-20"></div>
+  <div class="day-cell future" title="2026-06-21" data-date="2026-06-21"></div>
+  <div class="day-cell future" title="2026-06-22" data-date="2026-06-22"></div>
+  <div class="day-cell future" title="2026-06-23" data-date="2026-06-23"></div>
+  <div class="day-cell future" title="2026-06-24" data-date="2026-06-24"></div>
+  <div class="day-cell future" title="2026-06-25" data-date="2026-06-25"></div>
+  <div class="day-cell future" title="2026-06-26" data-date="2026-06-26"></div>
+  <div class="day-cell future" title="2026-06-27" data-date="2026-06-27"></div>
+  <div class="day-cell future" title="2026-06-28" data-date="2026-06-28"></div>
+  <div class="day-cell future" title="2026-06-29" data-date="2026-06-29"></div>
+  <div class="day-cell future" title="2026-06-30" data-date="2026-06-30"></div>
+  <div class="day-cell future" title="2026-07-01" data-date="2026-07-01"></div>
+  <div class="day-cell future" title="2026-07-02" data-date="2026-07-02"></div>
+  <div class="day-cell future" title="2026-07-03" data-date="2026-07-03"></div>
+  <div class="day-cell future" title="2026-07-04" data-date="2026-07-04"></div>
+  <div class="day-cell future" title="2026-07-05" data-date="2026-07-05"></div>
+  <div class="day-cell future" title="2026-07-06" data-date="2026-07-06"></div>
+  <div class="day-cell future" title="2026-07-07" data-date="2026-07-07"></div>
+  <div class="day-cell future" title="2026-07-08" data-date="2026-07-08"></div>
+  <div class="day-cell future" title="2026-07-09" data-date="2026-07-09"></div>
+  <div class="day-cell future" title="2026-07-10" data-date="2026-07-10"></div>
+  <div class="day-cell future" title="2026-07-11" data-date="2026-07-11"></div>
+  <div class="day-cell future" title="2026-07-12" data-date="2026-07-12"></div>
+  <div class="day-cell future" title="2026-07-13" data-date="2026-07-13"></div>
+  <div class="day-cell future" title="2026-07-14" data-date="2026-07-14"></div>
+  <div class="day-cell future" title="2026-07-15" data-date="2026-07-15"></div>
+  <div class="day-cell future" title="2026-07-16" data-date="2026-07-16"></div>
+  <div class="day-cell future" title="2026-07-17" data-date="2026-07-17"></div>
+  <div class="day-cell future" title="2026-07-18" data-date="2026-07-18"></div>
+  <div class="day-cell future" title="2026-07-19" data-date="2026-07-19"></div>
+  <div class="day-cell future" title="2026-07-20" data-date="2026-07-20"></div>
+  <div class="day-cell future" title="2026-07-21" data-date="2026-07-21"></div>
+  <div class="day-cell future" title="2026-07-22" data-date="2026-07-22"></div>
+  <div class="day-cell future" title="2026-07-23" data-date="2026-07-23"></div>
+  <div class="day-cell future" title="2026-07-24" data-date="2026-07-24"></div>
+  <div class="day-cell future" title="2026-07-25" data-date="2026-07-25"></div>
+  <div class="day-cell future" title="2026-07-26" data-date="2026-07-26"></div>
+  <div class="day-cell future" title="2026-07-27" data-date="2026-07-27"></div>
+  <div class="day-cell future" title="2026-07-28" data-date="2026-07-28"></div>
+  <div class="day-cell future" title="2026-07-29" data-date="2026-07-29"></div>
+  <div class="day-cell future" title="2026-07-30" data-date="2026-07-30"></div>
+  <div class="day-cell future" title="2026-07-31" data-date="2026-07-31"></div>
+  <div class="day-cell future" title="2026-08-01" data-date="2026-08-01"></div>
+  <div class="day-cell future" title="2026-08-02" data-date="2026-08-02"></div>
+  <div class="day-cell future" title="2026-08-03" data-date="2026-08-03"></div>
+  <div class="day-cell future" title="2026-08-04" data-date="2026-08-04"></div>
+  <div class="day-cell future" title="2026-08-05" data-date="2026-08-05"></div>
+  <div class="day-cell future" title="2026-08-06" data-date="2026-08-06"></div>
+  <div class="day-cell future" title="2026-08-07" data-date="2026-08-07"></div>
+  <div class="day-cell future" title="2026-08-08" data-date="2026-08-08"></div>
+  <div class="day-cell future" title="2026-08-09" data-date="2026-08-09"></div>
+  <div class="day-cell future" title="2026-08-10" data-date="2026-08-10"></div>
+  <div class="day-cell future" title="2026-08-11" data-date="2026-08-11"></div>
+  <div class="day-cell future" title="2026-08-12" data-date="2026-08-12"></div>
+  <div class="day-cell future" title="2026-08-13" data-date="2026-08-13"></div>
+  <div class="day-cell future" title="2026-08-14" data-date="2026-08-14"></div>
+  <div class="day-cell future" title="2026-08-15" data-date="2026-08-15"></div>
+  <div class="day-cell future" title="2026-08-16" data-date="2026-08-16"></div>
+  <div class="day-cell future" title="2026-08-17" data-date="2026-08-17"></div>
+  <div class="day-cell future" title="2026-08-18" data-date="2026-08-18"></div>
+  <div class="day-cell future" title="2026-08-19" data-date="2026-08-19"></div>
+  <div class="day-cell future" title="2026-08-20" data-date="2026-08-20"></div>
+  <div class="day-cell future" title="2026-08-21" data-date="2026-08-21"></div>
+  <div class="day-cell future" title="2026-08-22" data-date="2026-08-22"></div>
+  <div class="day-cell future" title="2026-08-23" data-date="2026-08-23"></div>
+  <div class="day-cell future" title="2026-08-24" data-date="2026-08-24"></div>
+  <div class="day-cell future" title="2026-08-25" data-date="2026-08-25"></div>
+  <div class="day-cell future" title="2026-08-26" data-date="2026-08-26"></div>
+  <div class="day-cell future" title="2026-08-27" data-date="2026-08-27"></div>
+  <div class="day-cell future" title="2026-08-28" data-date="2026-08-28"></div>
+  <div class="day-cell future" title="2026-08-29" data-date="2026-08-29"></div>
+  <div class="day-cell future" title="2026-08-30" data-date="2026-08-30"></div>
+  <div class="day-cell future" title="2026-08-31" data-date="2026-08-31"></div>
+  <div class="day-cell future" title="2026-09-01" data-date="2026-09-01"></div>
+  <div class="day-cell future" title="2026-09-02" data-date="2026-09-02"></div>
+  <div class="day-cell future" title="2026-09-03" data-date="2026-09-03"></div>
+  <div class="day-cell future" title="2026-09-04" data-date="2026-09-04"></div>
+  <div class="day-cell future" title="2026-09-05" data-date="2026-09-05"></div>
+  <div class="day-cell future" title="2026-09-06" data-date="2026-09-06"></div>
+  <div class="day-cell future" title="2026-09-07" data-date="2026-09-07"></div>
+  <div class="day-cell future" title="2026-09-08" data-date="2026-09-08"></div>
+  <div class="day-cell future" title="2026-09-09" data-date="2026-09-09"></div>
+  <div class="day-cell future" title="2026-09-10" data-date="2026-09-10"></div>
+  <div class="day-cell future" title="2026-09-11" data-date="2026-09-11"></div>
+  <div class="day-cell future" title="2026-09-12" data-date="2026-09-12"></div>
+  <div class="day-cell future" title="2026-09-13" data-date="2026-09-13"></div>
+  <div class="day-cell future" title="2026-09-14" data-date="2026-09-14"></div>
+  <div class="day-cell future" title="2026-09-15" data-date="2026-09-15"></div>
+  <div class="day-cell future" title="2026-09-16" data-date="2026-09-16"></div>
+  <div class="day-cell future" title="2026-09-17" data-date="2026-09-17"></div>
+  <div class="day-cell future" title="2026-09-18" data-date="2026-09-18"></div>
+  <div class="day-cell future" title="2026-09-19" data-date="2026-09-19"></div>
+  <div class="day-cell future" title="2026-09-20" data-date="2026-09-20"></div>
+  <div class="day-cell future" title="2026-09-21" data-date="2026-09-21"></div>
+  <div class="day-cell future" title="2026-09-22" data-date="2026-09-22"></div>
+  <div class="day-cell future" title="2026-09-23" data-date="2026-09-23"></div>
+  <div class="day-cell future" title="2026-09-24" data-date="2026-09-24"></div>
+  <div class="day-cell future" title="2026-09-25" data-date="2026-09-25"></div>
+  <div class="day-cell future" title="2026-09-26" data-date="2026-09-26"></div>
+  <div class="day-cell future" title="2026-09-27" data-date="2026-09-27"></div>
+  <div class="day-cell future" title="2026-09-28" data-date="2026-09-28"></div>
+  <div class="day-cell future" title="2026-09-29" data-date="2026-09-29"></div>
+  <div class="day-cell future" title="2026-09-30" data-date="2026-09-30"></div>
+  <div class="day-cell future" title="2026-10-01" data-date="2026-10-01"></div>
+  <div class="day-cell future" title="2026-10-02" data-date="2026-10-02"></div>
+  <div class="day-cell future" title="2026-10-03" data-date="2026-10-03"></div>
+  <div class="day-cell future" title="2026-10-04" data-date="2026-10-04"></div>
+  <div class="day-cell future" title="2026-10-05" data-date="2026-10-05"></div>
+  <div class="day-cell future" title="2026-10-06" data-date="2026-10-06"></div>
+  <div class="day-cell future" title="2026-10-07" data-date="2026-10-07"></div>
+  <div class="day-cell future" title="2026-10-08" data-date="2026-10-08"></div>
+  <div class="day-cell future" title="2026-10-09" data-date="2026-10-09"></div>
+  <div class="day-cell future" title="2026-10-10" data-date="2026-10-10"></div>
+  <div class="day-cell future" title="2026-10-11" data-date="2026-10-11"></div>
+  <div class="day-cell future" title="2026-10-12" data-date="2026-10-12"></div>
+  <div class="day-cell future" title="2026-10-13" data-date="2026-10-13"></div>
+  <div class="day-cell future" title="2026-10-14" data-date="2026-10-14"></div>
+  <div class="day-cell future" title="2026-10-15" data-date="2026-10-15"></div>
+  <div class="day-cell future" title="2026-10-16" data-date="2026-10-16"></div>
+  <div class="day-cell future" title="2026-10-17" data-date="2026-10-17"></div>
+  <div class="day-cell future" title="2026-10-18" data-date="2026-10-18"></div>
+  <div class="day-cell future" title="2026-10-19" data-date="2026-10-19"></div>
+  <div class="day-cell future" title="2026-10-20" data-date="2026-10-20"></div>
+  <div class="day-cell future" title="2026-10-21" data-date="2026-10-21"></div>
+  <div class="day-cell future" title="2026-10-22" data-date="2026-10-22"></div>
+  <div class="day-cell future" title="2026-10-23" data-date="2026-10-23"></div>
+  <div class="day-cell future" title="2026-10-24" data-date="2026-10-24"></div>
+  <div class="day-cell future" title="2026-10-25" data-date="2026-10-25"></div>
+  <div class="day-cell future" title="2026-10-26" data-date="2026-10-26"></div>
+  <div class="day-cell future" title="2026-10-27" data-date="2026-10-27"></div>
+  <div class="day-cell future" title="2026-10-28" data-date="2026-10-28"></div>
+  <div class="day-cell future" title="2026-10-29" data-date="2026-10-29"></div>
+  <div class="day-cell future" title="2026-10-30" data-date="2026-10-30"></div>
+  <div class="day-cell future" title="2026-10-31" data-date="2026-10-31"></div>
+  <div class="day-cell future" title="2026-11-01" data-date="2026-11-01"></div>
+  <div class="day-cell future" title="2026-11-02" data-date="2026-11-02"></div>
+  <div class="day-cell future" title="2026-11-03" data-date="2026-11-03"></div>
+  <div class="day-cell future" title="2026-11-04" data-date="2026-11-04"></div>
+  <div class="day-cell future" title="2026-11-05" data-date="2026-11-05"></div>
+  <div class="day-cell future" title="2026-11-06" data-date="2026-11-06"></div>
+  <div class="day-cell future" title="2026-11-07" data-date="2026-11-07"></div>
+  <div class="day-cell future" title="2026-11-08" data-date="2026-11-08"></div>
+  <div class="day-cell future" title="2026-11-09" data-date="2026-11-09"></div>
+  <div class="day-cell future" title="2026-11-10" data-date="2026-11-10"></div>
+  <div class="day-cell future" title="2026-11-11" data-date="2026-11-11"></div>
+  <div class="day-cell future" title="2026-11-12" data-date="2026-11-12"></div>
+  <div class="day-cell future" title="2026-11-13" data-date="2026-11-13"></div>
+  <div class="day-cell future" title="2026-11-14" data-date="2026-11-14"></div>
+  <div class="day-cell future" title="2026-11-15" data-date="2026-11-15"></div>
+  <div class="day-cell future" title="2026-11-16" data-date="2026-11-16"></div>
+  <div class="day-cell future" title="2026-11-17" data-date="2026-11-17"></div>
+  <div class="day-cell future" title="2026-11-18" data-date="2026-11-18"></div>
+  <div class="day-cell future" title="2026-11-19" data-date="2026-11-19"></div>
+  <div class="day-cell future" title="2026-11-20" data-date="2026-11-20"></div>
+  <div class="day-cell future" title="2026-11-21" data-date="2026-11-21"></div>
+  <div class="day-cell future" title="2026-11-22" data-date="2026-11-22"></div>
+  <div class="day-cell future" title="2026-11-23" data-date="2026-11-23"></div>
+  <div class="day-cell future" title="2026-11-24" data-date="2026-11-24"></div>
+  <div class="day-cell future" title="2026-11-25" data-date="2026-11-25"></div>
+  <div class="day-cell future" title="2026-11-26" data-date="2026-11-26"></div>
+  <div class="day-cell future" title="2026-11-27" data-date="2026-11-27"></div>
+  <div class="day-cell future" title="2026-11-28" data-date="2026-11-28"></div>
+  <div class="day-cell future" title="2026-11-29" data-date="2026-11-29"></div>
+  <div class="day-cell future" title="2026-11-30" data-date="2026-11-30"></div>
+  <div class="day-cell future" title="2026-12-01" data-date="2026-12-01"></div>
+  <div class="day-cell future" title="2026-12-02" data-date="2026-12-02"></div>
+  <div class="day-cell future" title="2026-12-03" data-date="2026-12-03"></div>
+  <div class="day-cell future" title="2026-12-04" data-date="2026-12-04"></div>
+  <div class="day-cell future" title="2026-12-05" data-date="2026-12-05"></div>
+  <div class="day-cell future" title="2026-12-06" data-date="2026-12-06"></div>
+  <div class="day-cell future" title="2026-12-07" data-date="2026-12-07"></div>
+  <div class="day-cell future" title="2026-12-08" data-date="2026-12-08"></div>
+  <div class="day-cell future" title="2026-12-09" data-date="2026-12-09"></div>
+  <div class="day-cell future" title="2026-12-10" data-date="2026-12-10"></div>
+  <div class="day-cell future" title="2026-12-11" data-date="2026-12-11"></div>
+  <div class="day-cell future" title="2026-12-12" data-date="2026-12-12"></div>
+  <div class="day-cell future" title="2026-12-13" data-date="2026-12-13"></div>
+  <div class="day-cell future" title="2026-12-14" data-date="2026-12-14"></div>
+  <div class="day-cell future" title="2026-12-15" data-date="2026-12-15"></div>
+  <div class="day-cell future" title="2026-12-16" data-date="2026-12-16"></div>
+  <div class="day-cell future" title="2026-12-17" data-date="2026-12-17"></div>
+  <div class="day-cell future" title="2026-12-18" data-date="2026-12-18"></div>
+  <div class="day-cell future" title="2026-12-19" data-date="2026-12-19"></div>
+  <div class="day-cell future" title="2026-12-20" data-date="2026-12-20"></div>
+  <div class="day-cell future" title="2026-12-21" data-date="2026-12-21"></div>
+  <div class="day-cell future" title="2026-12-22" data-date="2026-12-22"></div>
+  <div class="day-cell future" title="2026-12-23" data-date="2026-12-23"></div>
+  <div class="day-cell future" title="2026-12-24" data-date="2026-12-24"></div>
+  <div class="day-cell future" title="2026-12-25" data-date="2026-12-25"></div>
+  <div class="day-cell future" title="2026-12-26" data-date="2026-12-26"></div>
+  <div class="day-cell future" title="2026-12-27" data-date="2026-12-27"></div>
+  <div class="day-cell future" title="2026-12-28" data-date="2026-12-28"></div>
+  <div class="day-cell future" title="2026-12-29" data-date="2026-12-29"></div>
+  <div class="day-cell future" title="2026-12-30" data-date="2026-12-30"></div>
+  <div class="day-cell future" title="2026-12-31" data-date="2026-12-31"></div>
+  <div class="day-cell future" title="2027-01-01" data-date="2027-01-01"></div>
+  <div class="day-cell future" title="2027-01-02" data-date="2027-01-02"></div>
+  <div class="day-cell future" title="2027-01-03" data-date="2027-01-03"></div>
 </div>
 
                 </div>
@@ -782,7 +764,7 @@
     </div>
     
     <script>
-        // 加载单向历
+        // 异步加载并清洗单向历图片
         function loadDailyCalendar() {
             var d = new Date();
             var y = d.getFullYear();
@@ -826,7 +808,7 @@
             loadDailyCalendar();
         };
         
-        // Tooltip for heatmap
+        // Tooltip for custom heatmap
         document.querySelectorAll('.day-cell:not(.future)').forEach(cell => {
             cell.addEventListener('mouseenter', (e) => {
                 const rect = e.target.getBoundingClientRect();
