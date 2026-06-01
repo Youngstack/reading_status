@@ -1,4 +1,4 @@
-"""Generate Kindle reading page with Daily Calendar integration - GitHub Dark Mode & Year-Start"""
+"""Generate GitHub Dark Style Reading Dashboard v2"""
 
 import json
 import os
@@ -17,34 +17,54 @@ def load_reading_data():
 
 
 def calculate_stats(reading_days):
-    """Calculate reading statistics"""
+    """Calculate reading statistics matching v2 dashboard dashboards"""
     if not reading_days:
         return {
             "total_days": 0,
             "this_year_days": 0,
+            "this_month_days": 0,
+            "last_month_days": 0,
             "current_streak": 0,
             "longest_streak": 0,
-            "this_month_days": 0
+            "largest_streak": 0
         }
     
+    now = datetime.now()
     total_days = len(reading_days)
-    current_year = datetime.now().year
+    current_year = now.year
     this_year_days = len([d for d in reading_days.keys() if d.startswith(str(current_year))])
-    current_month = datetime.now().strftime("%Y-%m")
+    
+    # 当月统计
+    current_month = now.strftime("%Y-%m")
     this_month_days = len([d for d in reading_days.keys() if d.startswith(current_month)])
     
+    # 上月统计
+    first_of_this_month = now.replace(day=1)
+    last_day_of_last_month = first_of_this_month - timedelta(days=1)
+    last_month_str = last_day_of_last_month.strftime("%Y-%m")
+    last_month_days = len([d for d in reading_days.keys() if d.startswith(last_month_str)])
+    
     sorted_dates = sorted(reading_days.keys(), reverse=True)
-    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    yesterday = today - timedelta(days=1)
+    today_str = now.strftime("%Y-%m-%d")
+    yesterday_str = (now - timedelta(days=1)).strftime("%Y-%m-%d")
     
-    # Calculate current streak: count consecutive days from yesterday backwards
+    # 计算当前连续打卡 Current Streak
     current_streak = 0
-    check_date = yesterday
-    while check_date.strftime("%Y-%m-%d") in reading_days:
-        current_streak += 1
-        check_date = check_date - timedelta(days=1)
+    check_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
     
-    # Calculate longest streak
+    # 如果今天还没读，从昨天开始算连续；如果今天读了，从今天开始算
+    if today_str not in reading_days and yesterday_str in reading_days:
+        check_date = check_date - timedelta(days=1)
+    elif today_str not in reading_days and yesterday_str not in reading_days:
+        current_streak = 0
+        check_date = None
+        
+    if check_date:
+        while check_date.strftime("%Y-%m-%d") in reading_days:
+            current_streak += 1
+            check_date = check_date - timedelta(days=1)
+    
+    # 计算历史最长连续 Longest Streak & Largest Streak
     longest_streak = 0
     temp_streak = 0
     if sorted_dates:
@@ -66,24 +86,23 @@ def calculate_stats(reading_days):
         "total_days": total_days,
         "this_year_days": this_year_days,
         "this_month_days": this_month_days,
+        "last_month_days": last_month_days,
         "current_streak": current_streak,
-        "longest_streak": longest_streak
+        "longest_streak": longest_streak,
+        "largest_streak": longest_streak  # 仪表盘对应镜像指标
     }
 
 
-def generate_heatmap_data(reading_days, months=12):
+def generate_heatmap_data(reading_days):
     """Generate heatmap data starting strictly from January 1st of the current year"""
     today = datetime.now()
     current_year = today.year
     
-    # 🌟 核心时间算法改动：死锁在当年的 1 月 1 日
     start_date = datetime(current_year, 1, 1)
     weeks = []
     
-    # 📅 物理对齐：从 1 月 1 日所在周的周一开始绘制（防止第一周网格错位）
+    # 物理对齐：从 1 月 1 日所在周的周一开始绘制
     current_date = start_date - timedelta(days=start_date.weekday())
-    
-    # 🔄 结束条件：绘制到今年 12 月 31 日，展现完整自然年全景
     end_of_year = datetime(current_year, 12, 31)
     
     while current_date <= end_of_year:
@@ -92,8 +111,6 @@ def generate_heatmap_data(reading_days, months=12):
             day_date = current_date + timedelta(days=i)
             date_str = day_date.strftime("%Y-%m-%d")
             has_reading = date_str in reading_days
-            
-            # 过滤判定：由于对齐周一，可能夹带上一年的残余日子，将其强制变透明
             is_past_year = day_date.year < current_year
             
             week.append({
@@ -103,7 +120,7 @@ def generate_heatmap_data(reading_days, months=12):
                 "year": day_date.year,
                 "weekday": i,
                 "has_reading": has_reading if not is_past_year else False,
-                "is_future": day_date > today or is_past_year # 未来的日子或去年的残余都算作空白块
+                "is_future": day_date > today or is_past_year
             })
         
         weeks.append(week)
@@ -113,7 +130,7 @@ def generate_heatmap_data(reading_days, months=12):
 
 
 def generate_month_labels(weeks):
-    """Generate month labels based on calendar weeks layout"""
+    """Generate month labels accurately aligned with grid columns"""
     months = []
     current_month = None
     
@@ -132,7 +149,7 @@ def generate_month_labels(weeks):
 
 
 def generate_html(reading_data, output_file="index.html"):
-    """Generate HTML page with stats, daily calendar, and strict year-start heatmap"""
+    """Generate HTML layout exactly matching creative_minimalist_reading_dashboard_v2.png"""
     
     reading_days = reading_data.get("reading_days", {})
     last_updated_raw = reading_data.get("last_updated", "")
@@ -147,19 +164,18 @@ def generate_html(reading_data, output_file="index.html"):
         except:
             last_updated = last_updated_raw.split()[0] if last_updated_raw and ' ' in last_updated_raw else last_updated_raw
     else:
-        last_updated = ""
+        last_updated = datetime.now().strftime('%Y-%m-%d')
     
     stats = calculate_stats(reading_days)
     weeks = generate_heatmap_data(reading_days)
     month_labels = generate_month_labels(weeks)
     
-    # Generate heatmap HTML months header
+    # 动态构建热力图部分
     heatmap_html = '<div class="heatmap-months">\n'
     for month in month_labels:
         heatmap_html += f'  <div class="month-label" style="grid-column: {month["index"] + 1};">{month["name"]}</div>\n'
     heatmap_html += '</div>\n'
     
-    # Generate heatmap HTML cells grid
     heatmap_html += '<div class="heatmap-grid">\n'
     for week_idx, week in enumerate(weeks):
         for day in week:
@@ -176,13 +192,18 @@ def generate_html(reading_data, output_file="index.html"):
             heatmap_html += f'  <div class="{css_class}" title="{title}" data-date="{day["date"]}"></div>\n'
     heatmap_html += '</div>\n'
     
+    # 当前系统时间处理，渲染至左侧大卡片
+    now = datetime.now()
+    month_en = now.strftime("%B").upper()
+    day_num = now.day
+    full_date_en = now.strftime("%B %d, %Y")
+    
     html = f"""<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="我的阅读记录 - GitHub 自然年绿墙风格">
-    <title>阅读记录</title>
+    <title>Creative Minimalist Reading Dashboard v2</title>
     <style>
         * {{
             margin: 0;
@@ -191,214 +212,191 @@ def generate_html(reading_data, output_file="index.html"):
         }}
         
         :root {{
-            /* 🍏 全面对齐 GitHub 经典暗黑极客配色 */
-            --bg-primary: #0d1117;
-            --bg-secondary: #161b22;
-            --text-primary: #e6edf3;
-            --text-secondary: #7d8590;
-            --text-tertiary: #6e7681;
-            --border-color: #30363d;
-            --accent: #58a6ff;
-            --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-            
-            /* GitHub 经典色阶 */
-            --color-calendar-graph-day-bg: #161b22;
-            --color-calendar-graph-day-read-bg: #39d353;
+            --bg-main: #1a1c1e;          /* 极客暗黑主背景色 */
+            --bg-card: #212427;          /* 高级卡片背景色 */
+            --text-primary: #e2e2e2;     /* 主文字浅白 */
+            --text-muted: #8c9196;        /* 次要文字灰色 */
+            --accent-green: #4f9e66;      /* 标志性质感绿色 */
+            --border-color: #2b2e32;     /* 细腻卡片边框 */
+            --grid-empty: #212427;       /* 热力图空白格 */
         }}
         
         body {{
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-            background-color: var(--bg-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
             color: var(--text-primary);
-            line-height: 1.6;
-            padding: 2rem 1rem;
+            line-height: 1.5;
+            padding: 3rem 2rem;
+            display: flex;
+            justify-content: center;
         }}
         
-        .container {{
-            max-width: 1100px;
-            margin: 0 auto;
-            background: var(--bg-primary);
-            padding: 2rem 1.5rem;
+        .dashboard-container {{
+            width: 100%;
+            max-width: 1200px;
         }}
         
+        /* 顶部标题栏 */
         header {{
-            text-align: left;
-            margin-bottom: 2rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 2.5rem;
         }}
         
         h1 {{
-            font-size: 2rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.5rem;
-            color: var(--text-primary);
-        }}
-        
-        .subtitle {{
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            font-weight: 400;
-            letter-spacing: 0.5px;
-        }}
-        
-        .main-layout {{
-            display: grid;
-            grid-template-columns: 1fr 340px;
-            gap: 2rem;
-            margin-bottom: 3rem;
-            align-items: stretch;
-        }}
-        
-        .stats {{
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-            height: 100%;
-        }}
-        
-        .stat-item {{
-            text-align: left;
-            padding: 1.5rem;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            transition: all 0.2s ease;
-            background: var(--bg-secondary);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }}
-        
-        .stat-item:hover {{
-            border-color: #8b949e;
-        }}
-        
-        .stat-label {{
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-            letter-spacing: 0.5px;
-        }}
-        
-        .stat-value {{
             font-size: 2.2rem;
             font-weight: 600;
             color: var(--text-primary);
+            margin-bottom: 0.4rem;
+        }}
+        
+        .description {{
+            font-size: 1rem;
+            color: var(--text-muted);
+        }}
+        
+        /* 主体黄金排版布局 */
+        .main-grid {{
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 1.5rem;
+            align-items: start;
+        }}
+        
+        /* 左侧金句仪式感大卡片 */
+        .left-calendar-card {{
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem 1.8rem;
+            display: flex;
+            flex-direction: column;
+            min-height: 600px;
+        }}
+        
+        .calendar-date-group {{
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1.5rem;
+            margin-bottom: 2rem;
+        }}
+        
+        .cal-month-day {{
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: var(--accent-green);
+            letter-spacing: -0.5px;
             line-height: 1.1;
         }}
         
-        .stat-unit {{
+        .cal-full-date {{
             font-size: 1rem;
-            color: var(--text-secondary);
-            margin-left: 0.3rem;
-            font-weight: 400;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
         }}
         
-        .daily-calendar {{
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }}
-        
-        .daily-calendar-wrapper {{
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 0.5rem;
-            text-align: center;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }}
-        
-        .daily-calendar-image {{
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            display: block;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-            filter: invert(0.9) hue-rotate(180deg); /* 🌟 物理滤镜：智能化反转白底，完美融入黑暗风 */
-        }}
-        
-        .daily-calendar-image:hover {{
-            transform: scale(1.01);
-        }}
-        
-        .daily-calendar-loading {{
-            width: 100%;
-            height: 100%;
-            color: var(--text-tertiary);
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }}
-        
-        .heatmap-section {{
-            margin-bottom: 3rem;
-            padding: 1.5rem;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-        }}
-        
-        .section-title {{
-            font-size: 1.1rem;
-            font-weight: 500;
-            margin-bottom: 0.25rem;
+        .quote-content {{
+            font-family: "STSong", "SimSun", "Georgia", serif;
+            font-size: 1.25rem;
+            line-height: 2;
             color: var(--text-primary);
             letter-spacing: 0.5px;
+            margin-bottom: auto;
+            text-align: justify;
         }}
         
-        .section-subtitle {{
+        .quote-meta {{
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-top: 2rem;
+        }}
+        
+        /* 右侧工作流卡片区 */
+        .right-layout {{
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }}
+        
+        /* 3×2 数据网格 */
+        .stats-grid {{
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.2rem;
+        }}
+        
+        .stat-card {{
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 120px;
+        }}
+        
+        .stat-label {{
             font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-bottom: 1.5rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }}
+        
+        .stat-value-box {{
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-green);
+            line-height: 1;
+            margin-top: 0.8rem;
+        }}
+        
+        .stat-unit {{
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-left: 0.2rem;
+        }}
+        
+        /* 底部贡献图卡片 */
+        .heatmap-card {{
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+        }}
+        
+        .heatmap-title {{
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }}
+        
+        .heatmap-subtitle {{
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 1.8rem;
         }}
         
         .heatmap-wrapper {{
             overflow-x: auto;
-            padding: 0.5rem 0;
-        }}
-        
-        .heatmap-wrapper::-webkit-scrollbar {{
-            height: 6px;
-        }}
-        
-        .heatmap-wrapper::-webkit-scrollbar-track {{
-            background: var(--bg-primary);
-        }}
-        
-        .heatmap-wrapper::-webkit-scrollbar-thumb {{
-            background: var(--border-color);
-            border-radius: 3px;
+            padding-bottom: 0.5rem;
         }}
         
         .heatmap-container {{
             display: inline-grid;
             grid-template-rows: auto 1fr;
-            gap: 4px;
-            min-width: 100%;
+            gap: 6px;
         }}
         
         .heatmap-months {{
             display: grid;
             grid-template-columns: repeat(53, 1fr);
-            gap: 3px;
-            padding-bottom: 2px;
+            gap: 4px;
+            padding-bottom: 4px;
         }}
         
         .month-label {{
             font-size: 0.75rem;
-            color: var(--text-secondary);
-            text-align: left;
+            color: var(--text-muted);
+            font-weight: 500;
         }}
         
         .heatmap-grid {{
@@ -406,29 +404,24 @@ def generate_html(reading_data, output_file="index.html"):
             grid-template-columns: repeat(53, 1fr);
             grid-auto-flow: column;
             grid-template-rows: repeat(7, 1fr);
-            gap: 3px;
-            min-height: 100px;
+            gap: 4px;
         }}
         
         .day-cell {{
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            min-width: 10px;
-            background: var(--color-calendar-graph-day-bg);
-            border: 1px solid rgba(27, 31, 35, 0.04);
-            border-radius: 2px;
+            width: 12px;
+            height: 12px;
+            background-color: #1a1c1e;  /* 未打卡时对齐底色 */
+            border-radius: 3px;
             cursor: pointer;
-            transition: background-color 0.1s ease;
+            transition: all 0.1s ease;
         }}
         
         .day-cell.read {{
-            background: var(--color-calendar-graph-day-read-bg);
+            background-color: var(--accent-green); /* 精准绿色打卡块 */
         }}
         
         .day-cell.future {{
-            background: #0d1117;
-            border: 1px solid var(--border-color);
-            opacity: 0.12;
+            opacity: 0.2;
             cursor: default;
         }}
         
@@ -438,167 +431,139 @@ def generate_html(reading_data, output_file="index.html"):
             z-index: 10;
         }}
         
+        /* 底部脚注面板 */
         footer {{
             text-align: center;
-            padding-top: 2rem;
-            margin-top: 2rem;
-            border-top: 1px solid var(--border-color);
-            color: var(--text-tertiary);
-            font-size: 0.8rem;
+            margin-top: 3rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
         }}
         
-        footer a {{
-            color: var(--accent);
+        .footer-links {{
+            margin-top: 0.5rem;
+        }}
+        
+        .footer-links a {{
+            color: var(--accent-green);
             text-decoration: none;
+            margin: 0 0.4rem;
         }}
         
-        footer a:hover {{
+        .footer-links a:hover {{
             text-decoration: underline;
         }}
         
         .last-updated {{
-            margin-top: 0.75rem;
+            margin-top: 0.6rem;
             font-size: 0.75rem;
-            color: var(--text-tertiary);
+            color: #55585c;
         }}
         
+        /* 浮动气泡（Tooltip）*/
         .tooltip {{
             position: fixed;
-            background: #6e7681;
-            color: #ffffff;
-            padding: 5px 8px;
+            background: #2b2e32;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 5px 9px;
             font-size: 11px;
             border-radius: 6px;
             white-space: nowrap;
             pointer-events: none;
             z-index: 1000;
             font-weight: 500;
-            box-shadow: var(--shadow);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }}
         
-        @media (max-width: 1024px) {{
-            .main-layout {{
+        @media (max-width: 968px) {{
+            .main-grid {{
                 grid-template-columns: 1fr;
             }}
-            .daily-calendar {{
-                order: -1;
-                margin-bottom: 2rem;
-                min-height: 350px;
+            .stats-grid {{
+                grid-template-columns: repeat(2, 1fr);
             }}
-        }}
-        
-        @media (max-width: 768px) {{
-            .container {{ padding: 1rem; }}
-            h1 {{ font-size: 1.6rem; }}
-            .stats {{ grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }}
-            .stat-value {{ font-size: 1.8rem; }}
         }}
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="dashboard-container">
         <header>
-            <h1>阅读记录</h1>
-            <p class="subtitle">Reading Activity Journal</p>
+            <h1>Creative Minimalist Reading Dashboard v2</h1>
+            <p class="description">A reading activity journal and tracker dashboard for book lovers.</p>
         </header>
         
-        <div class="main-layout">
-            <div class="stats">
-                <div class="stat-item">
-                    <div class="stat-label">Total Days</div>
-                    <div class="stat-value">{stats['total_days']}<span class="stat-unit">days</span></div>
+        <div class="main-grid">
+            <!-- 左侧核心仪式感排版卡片 -->
+            <div class="left-calendar-card">
+                <div class="calendar-date-group">
+                    <div class="cal-month-day">{month_en} {day_num}</div>
+                    <div class="cal-full-date">{full_date_en}</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-label">This Month</div>
-                    <div class="stat-value">{stats['this_month_days']}<span class="stat-unit">days</span></div>
+                <div class="quote-content">
+                    “我们皆说起阳光与歌声，说起我们小时候夏天的事情，那些童年的日子悠长恬静，一天有现在二十天那样长。”
                 </div>
-                <div class="stat-item">
-                    <div class="stat-label">Current Streak</div>
-                    <div class="stat-value">{stats['current_streak']}<span class="stat-unit">days</span></div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Longest Streak</div>
-                    <div class="stat-value">{stats['longest_streak']}<span class="stat-unit">days</span></div>
+                <div class="quote-meta">
+                    《我孤独地漫游，如一朵云：华兹华斯抒情诗选》之《蝴蝶》<br>
+                    诗人：威廉·华兹华斯 (William Wordsworth)
                 </div>
             </div>
             
-            <div class="daily-calendar">
-                <div class="daily-calendar-wrapper" id="dailyCalendarWrapper">
-                    <div id="dailyCalendarContent" class="daily-calendar-loading">
-                        Loading...
+            <!-- 右侧核心面板区 -->
+            <div class="right-layout">
+                <!-- 3×2 数据矩阵 -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Days</div>
+                        <div class="stat-value-box">{stats['total_days']}<span class="stat-unit">days</span></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">This Month</div>
+                        <div class="stat-value-box">{stats['this_month_days']}<span class="stat-unit">days</span></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Last Month</div>
+                        <div class="stat-value-box">{stats['last_month_days']}<span class="stat-unit">days</span></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Current Streak</div>
+                        <div class="stat-value-box">{stats['current_streak']}<span class="stat-unit">days</span></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Longest Streak</div>
+                        <div class="stat-value-box">{stats['longest_streak']}<span class="stat-unit">days</span></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Largest Streak</div>
+                        <div class="stat-value-box">{stats['largest_streak']}<span class="stat-unit">days</span></div>
+                    </div>
+                </div>
+                
+                <!-- 底部打卡贡献卡片 -->
+                <div class="heatmap-card">
+                    <div class="heatmap-title">Contribution Graph</div>
+                    <div class="heatmap-subtitle">今年共阅读 {stats['this_year_days']} 天</div>
+                    
+                    <div class="heatmap-wrapper">
+                        <div class="heatmap-container">
+{heatmap_html}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         
-        <section class="heatmap-section">
-            <h2 class="section-title">Contribution Graph</h2>
-            <p class="section-subtitle">今年共阅读 {stats['this_year_days']} 天</p>
-            
-            <div class="heatmap-wrapper">
-                <div class="heatmap-container">
-{heatmap_html}
-                </div>
-            </div>
-        </section>
-        
         <footer>
             <p>Keep Reading · Keep Growing</p>
-            <p style="margin-top: 0.5rem;">
-                <a href="https://github.com" target="_blank">GitHub</a>
-                <span style="margin: 0 0.5rem;">·</span>
+            <div class="footer-links">
+                <a href="https://github.com" target="_blank">GitHub</a> · 
                 <a href="https://www.amazon.com/kindle/reading/insights" target="_blank">Kindle</a>
-            </p>
-            {f'<p class="last-updated">Last updated: {last_updated}</p>' if last_updated else ''}
+            </div>
+            <p class="last-updated">Last updated: {last_updated}</p>
         </footer>
     </div>
     
     <script>
-        // 异步加载并清洗单向历图片
-        function loadDailyCalendar() {{
-            var d = new Date();
-            var y = d.getFullYear();
-            var m = d.getMonth() + 1;
-            var n = d.getDate();
-            var mm = m > 9 ? m : "0" + m;
-            var dd = n > 9 ? n : "0" + n;
-            
-            var imgSources = [
-                "https://img.owspace.com/Public/uploads/Download/" + y + "/" + mm + dd + ".jpg",
-                "https://img.owspace.com/Public/uploads/Download/" + y + "/" + m + n + ".jpg"
-            ];
-            
-            tryLoadImage(0);
-            
-            function tryLoadImage(index) {{
-                if (index >= imgSources.length) {{
-                    document.getElementById("dailyCalendarContent").innerHTML = 
-                        '<div class="daily-calendar-loading" style="padding: 3rem 1rem; text-align: center;">' +
-                        '<p style="font-size: 3rem; margin-bottom: 1rem;">📚</p>' +
-                        '<p style="font-size: 1.2rem; margin-bottom: 0.5rem; color: var(--text-primary);">' + y + ' 年 ' + parseInt(m) + ' 月 ' + parseInt(n) + ' 日</p>' +
-                        '<p style="font-size: 0.85rem; color: var(--text-tertiary); margin-top: 1rem;">Keep Reading · Keep Growing</p>' +
-                        '</div>';
-                    return;
-                }}
-                
-                var img = new Image();
-                img.onload = function() {{
-                    document.getElementById("dailyCalendarContent").innerHTML = 
-                        '<img class="daily-calendar-image" src="' + imgSources[index] + '" alt="单向历" referrerpolicy="no-referrer" />';
-                }};
-                img.onerror = function() {{
-                    tryLoadImage(index + 1);
-                }};
-                img.referrerPolicy = 'no-referrer';
-                img.src = imgSources[index];
-            }}
-        }}
-        
-        window.onload = function() {{
-            loadDailyCalendar();
-        }};
-        
-        // Tooltip for custom heatmap
+        // 原生 Tooltip 悬浮提示引擎
         document.querySelectorAll('.day-cell:not(.future)').forEach(cell => {{
             cell.addEventListener('mouseenter', (e) => {{
                 const rect = e.target.getBoundingClientRect();
@@ -606,7 +571,7 @@ def generate_html(reading_data, output_file="index.html"):
                 tooltip.className = 'tooltip';
                 tooltip.textContent = e.target.getAttribute('title');
                 tooltip.style.cssText = `
-                    top: ${{rect.top - 28}}px;
+                    top: ${{rect.top - 32}}px;
                     left: ${{rect.left + rect.width / 2}}px;
                     transform: translateX(-50%);
                 `;
@@ -628,17 +593,13 @@ def generate_html(reading_data, output_file="index.html"):
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(html)
     
-    print(f"✅ Page with daily calendar generated: {output_file}")
-    print(f"📊 Stats: {stats}")
+    print(f"✅ Dashboard v2 HTML generated: {output_file}")
 
 
 def main():
-    """Main function"""
-    print("📖 Generating reading page with GitHub Style & Year-Start...")
-    
+    print("📖 Generating reading dashboard v2 based on creative_minimalist_reading_dashboard_v2.png...")
     reading_data = load_reading_data()
     generate_html(reading_data)
-    
     print("✅ Done!")
 
 
