@@ -1,4 +1,4 @@
-"""Generate Kindle reading page with Daily Calendar integration"""
+"""Generate Kindle reading page with Daily Calendar integration - GitHub Dark Mode & Year-Start"""
 
 import json
 import os
@@ -72,18 +72,29 @@ def calculate_stats(reading_days):
 
 
 def generate_heatmap_data(reading_days, months=12):
-    """Generate heatmap data for the last N months"""
+    """Generate heatmap data starting strictly from January 1st of the current year"""
     today = datetime.now()
-    start_date = today - timedelta(days=months * 30)
+    current_year = today.year
+    
+    # 🌟 核心时间算法改动：死锁在当年的 1 月 1 日
+    start_date = datetime(current_year, 1, 1)
     weeks = []
+    
+    # 📅 物理对齐：从 1 月 1 日所在周的周一开始绘制（防止第一周网格错位）
     current_date = start_date - timedelta(days=start_date.weekday())
     
-    while current_date <= today:
+    # 🔄 结束条件：绘制到今年 12 月 31 日，展现完整自然年全景
+    end_of_year = datetime(current_year, 12, 31)
+    
+    while current_date <= end_of_year:
         week = []
         for i in range(7):
             day_date = current_date + timedelta(days=i)
             date_str = day_date.strftime("%Y-%m-%d")
             has_reading = date_str in reading_days
+            
+            # 过滤判定：由于对齐周一，可能夹带上一年的残余日子，将其强制变透明
+            is_past_year = day_date.year < current_year
             
             week.append({
                 "date": date_str,
@@ -91,8 +102,8 @@ def generate_heatmap_data(reading_days, months=12):
                 "month": day_date.month,
                 "year": day_date.year,
                 "weekday": i,
-                "has_reading": has_reading,
-                "is_future": day_date > today
+                "has_reading": has_reading if not is_past_year else False,
+                "is_future": day_date > today or is_past_year # 未来的日子或去年的残余都算作空白块
             })
         
         weeks.append(week)
@@ -102,7 +113,7 @@ def generate_heatmap_data(reading_days, months=12):
 
 
 def generate_month_labels(weeks):
-    """Generate month labels for the heatmap"""
+    """Generate month labels based on calendar weeks layout"""
     months = []
     current_month = None
     
@@ -121,12 +132,11 @@ def generate_month_labels(weeks):
 
 
 def generate_html(reading_data, output_file="index.html"):
-    """Generate HTML page with stats, daily calendar, and heatmap"""
+    """Generate HTML page with stats, daily calendar, and strict year-start heatmap"""
     
     reading_days = reading_data.get("reading_days", {})
     last_updated_raw = reading_data.get("last_updated", "")
     
-    # 格式化 last_updated，只显示日期
     if last_updated_raw:
         try:
             if 'T' in last_updated_raw or ' ' in last_updated_raw:
@@ -140,15 +150,16 @@ def generate_html(reading_data, output_file="index.html"):
         last_updated = ""
     
     stats = calculate_stats(reading_days)
-    weeks = generate_heatmap_data(reading_days, months=12)
+    weeks = generate_heatmap_data(reading_days)
     month_labels = generate_month_labels(weeks)
     
-    # Generate heatmap HTML
+    # Generate heatmap HTML months header
     heatmap_html = '<div class="heatmap-months">\n'
     for month in month_labels:
         heatmap_html += f'  <div class="month-label" style="grid-column: {month["index"] + 1};">{month["name"]}</div>\n'
     heatmap_html += '</div>\n'
     
+    # Generate heatmap HTML cells grid
     heatmap_html += '<div class="heatmap-grid">\n'
     for week_idx, week in enumerate(weeks):
         for day in week:
@@ -170,7 +181,7 @@ def generate_html(reading_data, output_file="index.html"):
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="我的阅读记录 - GitHub 风格">
+    <meta name="description" content="我的阅读记录 - GitHub 自然年绿墙风格">
     <title>阅读记录</title>
     <style>
         * {{
@@ -180,7 +191,7 @@ def generate_html(reading_data, output_file="index.html"):
         }}
         
         :root {{
-            /* 🍏 全面对齐 GitHub 经典暗黑风格极客配色 */
+            /* 🍏 全面对齐 GitHub 经典暗黑极客配色 */
             --bg-primary: #0d1117;
             --bg-secondary: #161b22;
             --text-primary: #e6edf3;
@@ -190,13 +201,13 @@ def generate_html(reading_data, output_file="index.html"):
             --accent: #58a6ff;
             --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
             
-            /* GitHub 经典绿墙色阶 */
+            /* GitHub 经典色阶 */
             --color-calendar-graph-day-bg: #161b22;
-            --color-calendar-graph-day-read-bg: #39d353; /* 标准打卡绿 */
+            --color-calendar-graph-day-read-bg: #39d353;
         }}
         
         body {{
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
             background-color: var(--bg-primary);
             color: var(--text-primary);
             line-height: 1.6;
@@ -232,7 +243,6 @@ def generate_html(reading_data, output_file="index.html"):
             letter-spacing: 0.5px;
         }}
         
-        /* 中部两栏布局 */
         .main-layout {{
             display: grid;
             grid-template-columns: 1fr 340px;
@@ -268,9 +278,8 @@ def generate_html(reading_data, output_file="index.html"):
             font-size: 0.75rem;
             color: var(--text-secondary);
             font-weight: 500;
-            text-transform: none;
-            letter-spacing: 0.5px;
             margin-bottom: 0.5rem;
+            letter-spacing: 0.5px;
         }}
         
         .stat-value {{
@@ -287,7 +296,6 @@ def generate_html(reading_data, output_file="index.html"):
             font-weight: 400;
         }}
         
-        /* 单向历样式 */
         .daily-calendar {{
             height: 100%;
             display: flex;
@@ -316,7 +324,7 @@ def generate_html(reading_data, output_file="index.html"):
             border-radius: 4px;
             cursor: pointer;
             transition: transform 0.2s ease;
-            filter: invert(0.9) hue-rotate(180deg); /* 🌟 暗黑模式适配：反转色温以对齐黑底 */
+            filter: invert(0.9) hue-rotate(180deg); /* 🌟 物理滤镜：智能化反转白底，完美融入黑暗风 */
         }}
         
         .daily-calendar-image:hover {{
@@ -407,8 +415,8 @@ def generate_html(reading_data, output_file="index.html"):
             aspect-ratio: 1 / 1;
             min-width: 10px;
             background: var(--color-calendar-graph-day-bg);
-            border: 1px solid rgba(27, 31, 35, 0.06);
-            border-radius: 2px; /* GitHub 经典的微圆角 */
+            border: 1px solid rgba(27, 31, 35, 0.04);
+            border-radius: 2px;
             cursor: pointer;
             transition: background-color 0.1s ease;
         }}
@@ -420,7 +428,7 @@ def generate_html(reading_data, output_file="index.html"):
         .day-cell.future {{
             background: #0d1117;
             border: 1px solid var(--border-color);
-            opacity: 0.15;
+            opacity: 0.12;
             cursor: default;
         }}
         
@@ -442,7 +450,6 @@ def generate_html(reading_data, output_file="index.html"):
         footer a {{
             color: var(--accent);
             text-decoration: none;
-            transition: text-decoration 0.2s;
         }}
         
         footer a:hover {{
@@ -455,7 +462,6 @@ def generate_html(reading_data, output_file="index.html"):
             color: var(--text-tertiary);
         }}
         
-        /* GitHub 经典悬浮气泡 */
         .tooltip {{
             position: fixed;
             background: #6e7681;
@@ -474,7 +480,6 @@ def generate_html(reading_data, output_file="index.html"):
             .main-layout {{
                 grid-template-columns: 1fr;
             }}
-            
             .daily-calendar {{
                 order: -1;
                 margin-bottom: 2rem;
@@ -483,22 +488,10 @@ def generate_html(reading_data, output_file="index.html"):
         }}
         
         @media (max-width: 768px) {{
-            .container {{
-                padding: 1rem;
-            }}
-            
-            h1 {{
-                font-size: 1.6rem;
-            }}
-            
-            .stats {{
-                grid-template-columns: repeat(2, 1fr);
-                gap: 0.75rem;
-            }}
-            
-            .stat-value {{
-                font-size: 1.8rem;
-            }}
+            .container {{ padding: 1rem; }}
+            h1 {{ font-size: 1.6rem; }}
+            .stats {{ grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }}
+            .stat-value {{ font-size: 1.8rem; }}
         }}
     </style>
 </head>
@@ -540,7 +533,7 @@ def generate_html(reading_data, output_file="index.html"):
         
         <section class="heatmap-section">
             <h2 class="section-title">Contribution Graph</h2>
-            <p class="section-subtitle">过去一年共阅读 {stats['this_year_days']} 天</p>
+            <p class="section-subtitle">今年共阅读 {stats['this_year_days']} 天</p>
             
             <div class="heatmap-wrapper">
                 <div class="heatmap-container">
@@ -561,7 +554,7 @@ def generate_html(reading_data, output_file="index.html"):
     </div>
     
     <script>
-        // 加载单向历
+        // 异步加载并清洗单向历图片
         function loadDailyCalendar() {{
             var d = new Date();
             var y = d.getFullYear();
@@ -605,7 +598,7 @@ def generate_html(reading_data, output_file="index.html"):
             loadDailyCalendar();
         }};
         
-        // Tooltip for heatmap
+        // Tooltip for custom heatmap
         document.querySelectorAll('.day-cell:not(.future)').forEach(cell => {{
             cell.addEventListener('mouseenter', (e) => {{
                 const rect = e.target.getBoundingClientRect();
@@ -641,7 +634,7 @@ def generate_html(reading_data, output_file="index.html"):
 
 def main():
     """Main function"""
-    print("📖 Generating reading page with daily calendar...")
+    print("📖 Generating reading page with GitHub Style & Year-Start...")
     
     reading_data = load_reading_data()
     generate_html(reading_data)
