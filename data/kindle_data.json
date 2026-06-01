@@ -101,10 +101,17 @@
     "2026-05-27",
     "2026-05-28",
     "2026-05-29",
-    "2026-05-30"
+    "2026-05-30",
+    "2026-05-31",
+    "2026-06-01"
   ],
   "current_daily_streak": {
-    "duration": 0
+    "duration": 6,
+    "readingMarketplace": 1,
+    "utcEndTime": "2026-06-01T07:00:00.000Z",
+    "start": "2026-05-27T00:00:00.000Z",
+    "end": "2026-06-01T00:00:00.000Z",
+    "ttl": 1780316515
   },
   "longest_daily_streak": {
     "duration": 24,
@@ -114,19 +121,19 @@
     "end": "2026-02-05T00:00:00.000Z"
   },
   "current_weekly_streak": {
-    "duration": 20,
+    "duration": 21,
     "readingMarketplace": 1,
-    "utcEndTime": "2026-05-30T07:00:00.000Z",
+    "utcEndTime": "2026-06-01T07:00:00.000Z",
     "start": "2026-01-13T00:00:00.000Z",
-    "end": "2026-05-30T00:00:00.000Z",
-    "ttl": 1780306942
+    "end": "2026-06-01T00:00:00.000Z",
+    "ttl": 1780316515
   },
   "longest_weekly_streak": {
-    "duration": 20,
+    "duration": 21,
     "readingMarketplace": 1,
-    "utcEndTime": "2026-05-30T07:00:00.000Z",
+    "utcEndTime": "2026-06-01T07:00:00.000Z",
     "start": "2026-01-13T00:00:00.000Z",
-    "end": "2026-05-30T00:00:00.000Z"
+    "end": "2026-06-01T00:00:00.000Z"
   },
   "current_weekly_streak_state": "active",
   "goal_info": {
@@ -138,6 +145,14 @@
       }
     },
     "titles_read": [
+      {
+        "asin": "B735F72DDAE44988BAAB199B67C1E4E4",
+        "read_event_id": "e998b3d9-2c85-4539-a62c-7630bc80f027",
+        "date_read": "2026-05-31T21:54:14-07:00",
+        "content_type": "PDOC",
+        "source_origin": "KINDLE",
+        "book_uri": "UNKNOWN"
+      },
       {
         "asin": "6E759A542E474922831436672FFE198F",
         "read_event_id": "af770473-206b-42d9-9b02-7bc187e25290",
@@ -270,11 +285,11 @@
     "totalEarnedAchievements": 9,
     "achievementsDisplayAttributes": [
       {
-        "imageUrl": "https://m.media-amazon.com/images/G/01/RC/KindleAchievements2026SpringChallenge_SilverReader_fab43b45-6dbf-3690-b1a1-1f1965f65b90.png",
-        "quantity": 1,
-        "title": "Silver Reader",
+        "imageUrl": "https://m.media-amazon.com/images/G/01/RC/KindleAchievements2026SpringChallenge_HeadStart_edfab7da-b953-33cf-a0fe-d3e6dacedd38.png",
+        "quantity": 3,
+        "title": "Head Start",
         "isUnrevealedMysteryAchievement": false,
-        "hasLevel": false
+        "hasLevel": true
       },
       {
         "imageUrl": "https://m.media-amazon.com/images/G/01/RC/KindleAchievements2026SpringChallenge_GoldReader_d3173512-7315-3369-8a11-06f88d6fa347.png",
