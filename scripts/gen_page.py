@@ -1,12 +1,13 @@
-"""Generate GitHub Dark Style Reading Dashboard v3 - Premium Library & BugFix Edition"""
+"""Generate GitHub Dark Style Reading Dashboard v3 - Premium Library & Self-Contained Edition"""
 
 import json
 import os
 import re
 import calendar
 from datetime import datetime, timedelta
+from pathlib import Path
 
-# 🍏 引入核心配置路径
+# 🍏 仅引入 100% 确保存在的核心数据变量，彻底绝育 OUTPUT_HTML_FILE 导致的解析假死
 from config import DATA_DIR, READING_DATA_FILE, CLIPPINGS_FILE
 
 
@@ -134,9 +135,9 @@ def calculate_stats(reading_days):
     current_streak = 0
     check_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
     
-    if today_str not in reading_days and yesterday_str in reading_days:
+    if today_str not in reading_days && yesterday_str in reading_days:
         check_date = check_date - timedelta(days=1)
-    elif today_str not in reading_days and yesterday_str not in reading_days:
+    elif today_str not in reading_days && yesterday_str not in reading_days:
         current_streak = 0
         check_date = None
         
@@ -198,10 +199,9 @@ def generate_heatmap_data(reading_days):
     return weeks
 
 
-def generate_html(reading_data, output_file="index.html"):
+def generate_html(reading_data, output_file=None):
     """Generate HTML layout with high-contrast text and interactive popups"""
     
-    # 🌟 核心修正：在函数入口处死锁系统时间，确保 month_en 和 day_num 绝对定义生效
     now = datetime.now()
     month_en = now.strftime("%B").upper()
     day_num = now.day
@@ -249,7 +249,6 @@ def generate_html(reading_data, output_file="index.html"):
             </div>
         </div>"""
 
-    # 兼容最后一项落盘更新标签
     last_updated = now.strftime('%Y-%m-%d')
     
     html = f"""<!DOCTYPE html>
@@ -354,7 +353,7 @@ def generate_html(reading_data, output_file="index.html"):
         .premium-book-author {{ font-size: 0.8rem; color: #8a8e94; margin-bottom: 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
         .premium-book-highlights-count {{ font-size: 0.75rem; font-weight: 700; color: var(--accent-green); letter-spacing: 0.5px; }}
         
-        /* Modal Window Box Drawer Styles */
+        /* Modal Box Drawer Window Styles */
         .modal-overlay {{
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(5, 6, 8, 0.85); backdrop-filter: blur(8px);
@@ -489,13 +488,22 @@ def generate_html(reading_data, output_file="index.html"):
 </body>
 </html>"""
     
-    # 修改原本硬编码输出，物理对齐 config.py 注册的绝对成品 HTML 路径
-    from config import OUTPUT_HTML_FILE
-    output_path = str(OUTPUT_HTML_FILE)
-    
-    with open(output_path, "w", encoding="utf-8") as f:
+    # 🌟 核心防爆修改：不再从外部 config 中 import 可能会缺失的路径变量
+    # 直接利用 100% 确保存在的 READING_DATA_FILE 绝对物理拓扑结构，反向倒推项目根目录
+    if output_file is None:
+        try:
+            # 找到 data/reading_data.json 的父目录的父目录，即为项目主根目录
+            project_root = Path(str(READING_DATA_FILE)).parent.parent
+            output_path = project_root / "index.html"
+        except:
+            # 如果万一发生解析偏折，采用当前执行环境兜底
+            output_path = Path(__file__).parent.parent / "index.html"
+    else:
+        output_path = Path(output_file)
+        
+    with open(str(output_path), "w", encoding="utf-8") as f:
         f.write(html)
-    print(f"🚀 V3 Master Dashboard successfully compiled to: {output_path}")
+    print(f"🚀 V3 Master Dashboard successfully compiled to: {output_path.resolve()}")
 
 
 def main():
