@@ -1,4 +1,4 @@
-"""Generate GitHub Dark Style Reading Dashboard v2 - Enhanced UI Edition"""
+"""Generate GitHub Dark Style Reading Dashboard v2 - Interactive Text Color Edition"""
 
 import json
 import os
@@ -28,7 +28,7 @@ def calculate_stats(reading_days):
             "current_streak": 0,
             "longest_streak": 0,
             "largest_streak": 0,
-            "days_in_month": 30,  # 默认兜底
+            "days_in_month": 30,
             "this_month_percent": 0
         }
     
@@ -41,7 +41,7 @@ def calculate_stats(reading_days):
     current_month_str = now.strftime("%Y-%m")
     this_month_days = len([d for d in reading_days.keys() if d.startswith(current_month_str)])
     
-    # 🌟 第一性原理：动态获取当前月份的绝对物理总天数（防爆闰年与大小月）
+    # 动态获取当前月份的绝对物理总天数
     _, days_in_month = calendar.monthrange(now.year, now.month)
     this_month_percent = round((this_month_days / days_in_month) * 100, 1) if days_in_month > 0 else 0
     
@@ -156,7 +156,7 @@ def generate_month_labels(weeks):
 
 
 def generate_html(reading_data, output_file="index.html"):
-    """Generate HTML layout with enhanced high-contrast text and interactive selection hover effects"""
+    """Generate HTML layout with high-contrast text and link hover text effects"""
     
     reading_days = reading_data.get("reading_days", {})
     last_updated_raw = reading_data.get("last_updated", "")
@@ -222,7 +222,7 @@ def generate_html(reading_data, output_file="index.html"):
             --bg-main: #0d0e10;          /* 深黑色科技质感底色 */
             --bg-card: #18191b;          /* 卡片内敛深灰色 */
             --text-white: #ffffff;       /* 纯白数字，拉满对比度 */
-            --text-muted: #62676b;        /* 灰色小标签，对齐参考图 */
+            --text-muted: #62676b;        /* 灰色小标签 */
             --accent-green: #3cd070;      /* 高亮翠绿 */
             --border-default: #26282b;    /* 暗色默认轻边框 */
         }}
@@ -266,7 +266,7 @@ def generate_html(reading_data, output_file="index.html"):
             align-items: start;
         }}
         
-        /* 左侧金句卡片 */
+        /* 左侧金句卡片底座 */
         .left-calendar-card {{
             background-color: var(--bg-card);
             border: 1px solid var(--border-default);
@@ -278,7 +278,6 @@ def generate_html(reading_data, output_file="index.html"):
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }}
         
-        /* 2、卡片增加选中态 Hover 特效 */
         .left-calendar-card:hover {{
             border-color: var(--accent-green);
             transform: translateY(-2px);
@@ -291,12 +290,19 @@ def generate_html(reading_data, output_file="index.html"):
             margin-bottom: 2rem;
         }}
         
+        /* 🌟 优化：左侧大日期文字过渡效果 */
         .cal-month-day {{
             font-size: 2.4rem;
             font-weight: 700;
-            color: var(--accent-green);
+            color: var(--text-white); /* 默认回归高亮的纯白色，增强视觉统一 */
             letter-spacing: -0.5px;
             line-height: 1.1;
+            transition: color 0.2s ease;
+        }}
+        
+        /* 🌟 优化点 1：左侧卡片 hover 时，大日期变为翠绿色 */
+        .left-calendar-card:hover .cal-month-day {{
+            color: var(--accent-green);
         }}
         
         .cal-full-date {{
@@ -367,14 +373,12 @@ def generate_html(reading_data, output_file="index.html"):
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }}
         
-        /* 2、卡片增加选中态悬浮效果，且边缘变绿 */
         .stat-card:hover {{
             border-color: var(--accent-green);
             transform: translateY(-3px);
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
         }}
         
-        /* 1、对齐参考图：大写置灰小标签 */
         .stat-label {{
             font-size: 0.75rem;
             color: var(--text-muted);
@@ -383,14 +387,20 @@ def generate_html(reading_data, output_file="index.html"):
             letter-spacing: 0.8px;
         }}
         
-        /* 1、对齐参考图：放大、纯白色字体的强悍数值展示 */
+        /* 🌟 优化：核心大数字增加颜色过渡延迟 */
         .stat-value-box {{
-            font-size: 3.2rem;  /* 强行膨胀放大字体 */
+            font-size: 3.2rem;
             font-weight: 700;
-            color: var(--text-white); /* 强行纯白化 */
+            color: var(--text-white); /* 默认状态为高对比度纯白 */
             line-height: 1;
             margin-top: 0.6rem;
             letter-spacing: -1px;
+            transition: color 0.2s ease; /* 保证颜色变化如丝般顺滑 */
+        }}
+        
+        /* 🌟 优化点 1&2：当数字指标卡片被 hover 选中时，内部的纯白数字瞬间精准变成绿色 */
+        .stat-card:hover .stat-value-box {{
+            color: var(--accent-green);
         }}
         
         .stat-unit {{
@@ -399,9 +409,14 @@ def generate_html(reading_data, output_file="index.html"):
             font-weight: 500;
             margin-left: 0.3rem;
             letter-spacing: 0;
+            transition: color 0.2s ease;
         }}
         
-        /* 3、This Month 指标底部的隐藏百分比横条进度条通道 */
+        /* 单位小字也同步微微转绿，提升视觉细腻度 */
+        .stat-card:hover .stat-unit {{
+            color: rgba(60, 208, 112, 0.7);
+        }}
+        
         .progress-container {{
             width: 100%;
             height: 5px;
@@ -413,12 +428,12 @@ def generate_html(reading_data, output_file="index.html"):
         
         .progress-bar {{
             height: 100%;
-            background-color: var(--accent-green); /* 仅用亮绿色填充区分 */
+            background-color: var(--accent-green);
             border-radius: 3px;
             transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }}
         
-        /* 贡献图主卡片 */
+        /* 🌟 隔离审查点 3：阅读热力统计卡片（Contribution Graph）仅保留外框变绿，文字和内部格子不发生任何颜色污染 */
         .heatmap-card {{
             background-color: var(--bg-card);
             border: 1px solid var(--border-default);
@@ -428,13 +443,14 @@ def generate_html(reading_data, output_file="index.html"):
         }}
         
         .heatmap-card:hover {{
-            border-color: var(--accent-green);
+            border-color: var(--accent-green); /* 仅外框产生激活态 */
         }}
         
         .heatmap-title {{
             font-size: 1.15rem;
             font-weight: 600;
             margin-bottom: 0.2rem;
+            color: var(--text-white);
         }}
         
         .heatmap-subtitle {{
@@ -556,9 +572,11 @@ def generate_html(reading_data, output_file="index.html"):
                     <div class="cal-month-day">{month_en} {day_num}</div>
                     <div class="cal-full-date">{full_date_en}</div>
                 </div>
-                <div class="bookmark-image-container">
-                    <img class="custom-bookmark-img" src="bookmark.png" alt="Bookmark Visual Anchor" onerror="this.style.display='none';">
+                
+                <div class="bookmark-image-container" id="bookmarkContainer">
+                    <img class="custom-bookmark-img" src="bookmark.png" alt="Bookmark Visual Anchor" onerror="document.getElementById('bookmarkContainer').style.display='none';">
                 </div>
+                
                 <div class="quote-content">
                     “我们皆说起阳光与歌声，说起我们小时候夏天的事情，那些童年的日子悠长恬静，一天有现在二十天那样长。”
                 </div>
@@ -630,7 +648,6 @@ def generate_html(reading_data, output_file="index.html"):
     </div>
     
     <script>
-        // 高性能原生 Tooltip 悬浮节点引擎
         document.querySelectorAll('.day-cell:not(.future)').forEach(cell => {{
             cell.addEventListener('mouseenter', (e) => {{
                 const rect = e.target.getBoundingClientRect();
