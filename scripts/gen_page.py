@@ -1,61 +1,131 @@
-"""Generate GitHub Dark Style Reading Dashboard v2 - Interactive Text Color Edition"""
+"""Generate GitHub Dark Style Reading Dashboard v3 - Premium Library Edition"""
 
 import json
 import os
+import re
 import calendar
 from datetime import datetime, timedelta
 
-from config import DATA_DIR, READING_DATA_FILE
+from config import DATA_DIR, READING_DATA_FILE, CLIPPINGS_FILE
 
 
-def load_reading_data():
-    """Load reading data from JSON file"""
-    if not os.path.exists(READING_DATA_FILE):
-        return {"reading_days": {}, "total_days": 0, "last_updated": ""}
+def parse_clippings_to_json():
+    """
+    第一性原理数据审计：
+    全量解析本地 My Clippings.txt，自动提取打卡日期，并按书名归类划线笔记
+    """
+    reading_days = {}
+    books_dict = {}
     
-    with open(READING_DATA_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+    if not os.path.exists(CLIPPINGS_FILE):
+        if os.path.exists(READING_DATA_FILE):
+            with open(READING_DATA_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        return {"reading_days": {}, "books": {}, "total_days": 0, "last_updated": ""}
+
+    with open(CLIPPINGS_FILE, "r", encoding="utf-8-sig") as f:
+        content = f.read()
+    
+    entries = content.split("==========\n")
+    
+    for entry in entries:
+        lines = [line.strip() for line in entry.split("\n") if line.strip()]
+        if len(lines) < 3:
+            continue
+            
+        book_title_raw = lines[0]
+        meta_line = lines[1]
+        clipping_text = "\n".join(lines[2:])
+        
+        # 提取书名与作者 (对齐标准：书名 (作者))
+        author = "Unknown Author"
+        book_title = book_title_raw
+        author_match = re.search(r"\(([^)]+)\)$", book_title_raw)
+        if author_match:
+            author = author_match.group(1)
+            book_title = book_title_raw[:author_match.start()].strip()
+        
+        # 兼容中英文系统清洗绝对时间戳
+        date_str = None
+        zh_match = re.search(r"(\d{4})年(\d{1,2})月(\d{1,2})日", meta_line)
+        if zh_match:
+            year, month, day = zh_match.groups()
+            date_str = f"{year}-{int(month):02d}-{int(day):02d}"
+        else:
+            en_match = re.search(r"Added on .*, (\w+) (\d{1,2}), (\d{4})", meta_line)
+            if en_match:
+                month_str, day, year = en_match.groups()
+                try:
+                    dt = datetime.strptime(f"{year} {month_str} {day}", "%Y %B %d")
+                    date_str = dt.strftime("%Y-%m-%d")
+                except:
+                    try:
+                        dt = datetime.strptime(f"{year} {month_str} {day}", "%Y %b %d")
+                        date_str = dt.strftime("%Y-%m-%d")
+                    except:
+                        pass
+        
+        if date_str:
+            reading_days[date_str] = reading_days.get(date_str, 0) + 1
+            
+            if book_title not in books_dict:
+                books_dict[book_title] = {
+                    "title": book_title,
+                    "author": author,
+                    "last_read": date_str,
+                    "count": 0,
+                    "clippings": []
+                }
+            
+            if date_str > books_dict[book_title]["last_read"]:
+                books_dict[book_title]["last_read"] = date_str
+                
+            books_dict[book_title]["count"] += 1
+            books_dict[book_title]["clippings"].append({
+                "date": date_str,
+                "text": clipping_text
+            })
+            
+    # 按最后阅读时间对书籍资产库降序排序
+    sorted_books = dict(sorted(books_dict.items(), key=lambda item: item[1]["last_read"], reverse=True))
+    
+    result = {
+        "reading_days": {d: {"count": c} for d, c in reading_days.items()},
+        "books": sorted_books,
+        "total_days": len(reading_days),
+        "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+    
+    with open(READING_DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(result, f, ensure_ascii=False, indent=4)
+        
+    return result
 
 
 def calculate_stats(reading_days):
     """Calculate reading statistics matching enhanced dashboard"""
     if not reading_days:
-        return {
-            "total_days": 0,
-            "this_year_days": 0,
-            "this_month_days": 0,
-            "last_month_days": 0,
-            "current_streak": 0,
-            "longest_streak": 0,
-            "largest_streak": 0,
-            "days_in_month": 30,
-            "this_month_percent": 0
-        }
+        return {"total_days": 0, "this_year_days": 0, "this_month_days": 0, "last_month_days": 0, "current_streak": 0, "longest_streak": 0, "largest_streak": 0, "days_in_month": 30, "this_month_percent": 0}
     
     now = datetime.now()
     total_days = len(reading_days)
     current_year = now.year
     this_year_days = len([d for d in reading_days.keys() if d.startswith(str(current_year))])
     
-    # 当月统计与百分比动态计算
     current_month_str = now.strftime("%Y-%m")
     this_month_days = len([d for d in reading_days.keys() if d.startswith(current_month_str)])
     
-    # 动态获取当前月份的绝对物理总天数
     _, days_in_month = calendar.monthrange(now.year, now.month)
     this_month_percent = round((this_month_days / days_in_month) * 100, 1) if days_in_month > 0 else 0
     
-    # 上月统计
     first_of_this_month = now.replace(day=1)
-    last_day_of_last_month = first_of_this_month - timedelta(days=1)
-    last_month_str = last_day_of_last_month.strftime("%Y-%m")
+    last_month_str = (first_of_this_month - timedelta(days=1)).strftime("%Y-%m")
     last_month_days = len([d for d in reading_days.keys() if d.startswith(last_month_str)])
     
     sorted_dates = sorted(reading_days.keys(), reverse=True)
     today_str = now.strftime("%Y-%m-%d")
     yesterday_str = (now - timedelta(days=1)).strftime("%Y-%m-%d")
     
-    # 计算当前连续打卡 Current Streak
     current_streak = 0
     check_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
     
@@ -69,8 +139,7 @@ def calculate_stats(reading_days):
         while check_date.strftime("%Y-%m-%d") in reading_days:
             current_streak += 1
             check_date = check_date - timedelta(days=1)
-    
-    # 计算历史最长连续 Longest Streak
+            
     longest_streak = 0
     temp_streak = 0
     if sorted_dates:
@@ -80,8 +149,7 @@ def calculate_stats(reading_days):
                 temp_streak = 1
             else:
                 prev_date = sorted_date_objs[i-1]
-                days_diff = (prev_date - current_date).days
-                if days_diff == 1:
+                if (prev_date - current_date).days == 1:
                     temp_streak += 1
                 else:
                     longest_streak = max(longest_streak, temp_streak)
@@ -104,466 +172,236 @@ def calculate_stats(reading_days):
 def generate_heatmap_data(reading_days):
     """Generate heatmap data starting strictly from January 1st of the current year"""
     today = datetime.now()
-    current_year = today.year
-    
-    start_date = datetime(current_year, 1, 1)
+    start_date = datetime(today.year, 1, 1)
     weeks = []
-    
     current_date = start_date - timedelta(days=start_date.weekday())
-    end_of_year = datetime(current_year, 12, 31)
+    end_of_year = datetime(today.year, 12, 31)
     
     while current_date <= end_of_year:
         week = []
         for i in range(7):
             day_date = current_date + timedelta(days=i)
             date_str = day_date.strftime("%Y-%m-%d")
-            has_reading = date_str in reading_days
-            is_past_year = day_date.year < current_year
-            
+            is_past_year = day_date.year < today.year
             week.append({
                 "date": date_str,
-                "day": day_date.day,
-                "month": day_date.month,
-                "year": day_date.year,
-                "weekday": i,
-                "has_reading": has_reading if not is_past_year else False,
+                "has_reading": date_str in reading_days if not is_past_year else False,
                 "is_future": day_date > today or is_past_year
             })
-        
         weeks.append(week)
         current_date += timedelta(days=7)
-    
     return weeks
 
 
-def generate_month_labels(weeks):
-    """Generate month labels accurately aligned with grid columns"""
-    months = []
-    current_month = None
-    
-    for i, week in enumerate(weeks):
-        first_day = week[0]
-        if first_day["month"] != current_month:
-            current_month = first_day["month"]
-            month_names = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-            months.append({
-                "index": i,
-                "name": month_names[current_month]
-            })
-    
-    return months
-
-
 def generate_html(reading_data, output_file="index.html"):
-    """Generate HTML layout with high-contrast text and link hover text effects"""
-    
     reading_days = reading_data.get("reading_days", {})
-    last_updated_raw = reading_data.get("last_updated", "")
-    
-    if last_updated_raw:
-        try:
-            if 'T' in last_updated_raw or ' ' in last_updated_raw:
-                dt = datetime.fromisoformat(last_updated_raw.replace('Z', '+00:00'))
-                last_updated = dt.strftime('%Y-%m-%d')
-            else:
-                last_updated = last_updated_raw.split()[0] if ' ' in last_updated_raw else last_updated_raw
-        except:
-            last_updated = last_updated_raw.split()[0] if last_updated_raw and ' ' in last_updated_raw else last_updated_raw
-    else:
-        last_updated = datetime.now().strftime('%Y-%m-%d')
+    books = reading_data.get("books", {})
     
     stats = calculate_stats(reading_days)
     weeks = generate_heatmap_data(reading_days)
-    month_labels = generate_month_labels(weeks)
     
-    # 动态构建热力图
-    heatmap_html = '<div class="heatmap-months">\n'
-    for month in month_labels:
-        heatmap_html += f'  <div class="month-label" style="grid-column: {month["index"] + 1};">{month["name"]}</div>\n'
-    heatmap_html += '</div>\n'
-    
-    heatmap_html += '<div class="heatmap-grid">\n'
-    for week_idx, week in enumerate(weeks):
+    # 渲染热力图网格
+    heatmap_html = '<div class="heatmap-grid">\n'
+    for week in weeks:
         for day in week:
             css_class = "day-cell"
-            if day["is_future"]:
-                css_class += " future"
-            elif day["has_reading"]:
-                css_class += " read"
-            
-            title = day["date"]
-            if day["has_reading"]:
-                title += " · 已阅读"
-            
-            heatmap_html += f'  <div class="{css_class}" title="{title}" data-date="{day["date"]}"></div>\n'
+            if day["is_future"]: css_class += " future"
+            elif day["has_reading"]: css_class += " read"
+            heatmap_html += f'  <div class="{css_class}" title="{day["date"]}"></div>\n'
     heatmap_html += '</div>\n'
     
-    # 时间面板解析
+    # 🌟 核心重构 2：全量对齐 image_d71482.jpg 极客卡片网格渲染
+    books_html = ""
+    # 内联书籍划线元数据库，作为全局 JavaScript 变量供弹窗瞬时加载
+    js_clippings_payload = {}
+    
+    for idx, (title, info) in enumerate(books.items()):
+        safe_id = f"book_id_{idx}"
+        js_clippings_payload[safe_id] = {
+            "title": title,
+            "author": info["author"],
+            "clippings": info["clippings"]
+        }
+        
+        # 自动循环生成渐变抽象封面底盘，深度还原高阶质感
+        gradient_index = (idx % 4) + 1
+        
+        books_html += f"""
+        <div class="premium-book-item" onclick="openClippingModal('{safe_id}')">
+            <div class="book-cover-plate gradient-skin-{gradient_index}">
+                <div class="book-cover-core-icon">📖</div>
+            </div>
+            <div class="book-info-panel">
+                <div class="premium-book-title">{title}</div>
+                <div class="premium-book-author">{info['author']}</div>
+                <div class="premium-book-highlights-count">❞ {info['count']} HIGHLIGHTS</div>
+            </div>
+        </div>"""
+
     now = datetime.now()
-    month_en = now.strftime("%B").upper()
-    day_num = now.day
-    full_date_en = now.strftime("%B %d, %Y")
     
     html = f"""<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced Minimalist Reading Dashboard v2</title>
+    <title>Premium Minimalist Reading Dashboard v3</title>
     <style>
-        * {{
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }}
-        
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
         :root {{
-            --bg-main: #0d0e10;          /* 深黑色科技质感底色 */
-            --bg-card: #18191b;          /* 卡片内敛深灰色 */
-            --text-white: #ffffff;       /* 纯白数字，拉满对比度 */
-            --text-muted: #62676b;        /* 灰色小标签 */
-            --accent-green: #3cd070;      /* 高亮翠绿 */
-            --border-default: #26282b;    /* 暗色默认轻边框 */
+            --bg-main: #0a0b0d;
+            --bg-card: #141619;
+            --text-white: #ffffff;
+            --text-muted: #5a5e63;
+            --accent-green: #3cd070;
+            --border-default: #222428;
         }}
         
         body {{
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", sans-serif;
-            background-color: var(--bg-main);
-            color: var(--text-white);
-            line-height: 1.5;
-            padding: 3rem 2rem;
-            display: flex;
-            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+            background-color: var(--bg-main); color: var(--text-white);
+            padding: 3rem 2rem; display: flex; justify-content: center;
             -webkit-font-smoothing: antialiased;
         }}
+        .dashboard-container {{ width: 100%; max-width: 1200px; }}
+        header {{ margin-bottom: 2.5rem; }}
+        h1 {{ font-size: 2.2rem; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 0.4rem; }}
+        .description {{ color: var(--text-muted); }}
         
-        .dashboard-container {{
-            width: 100%;
-            max-width: 1200px;
-        }}
+        .main-grid {{ display: grid; grid-template-columns: 320px 1fr; gap: 1.5rem; margin-bottom: 2rem; }}
         
-        header {{
-            margin-bottom: 2.5rem;
-        }}
-        
-        h1 {{
-            font-size: 2.2rem;
-            font-weight: 600;
-            letter-spacing: -0.5px;
-            margin-bottom: 0.4rem;
-        }}
-        
-        .description {{
-            font-size: 1rem;
-            color: var(--text-muted);
-        }}
-        
-        .main-grid {{
-            display: grid;
-            grid-template-columns: 320px 1fr;
-            gap: 1.5rem;
-            align-items: start;
-        }}
-        
-        /* 左侧金句卡片底座 */
+        /* 左侧金句卡片 */
         .left-calendar-card {{
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-default);
-            border-radius: 16px;
-            padding: 2rem 1.8rem;
-            display: flex;
-            flex-direction: column;
-            min-height: 620px;
+            background-color: var(--bg-card); border: 1px solid var(--border-default);
+            border-radius: 16px; padding: 2rem 1.8rem; display: flex; flex-direction: column; min-height: 600px;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }}
+        .left-calendar-card:hover {{ border-color: var(--accent-green); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); }}
+        .calendar-date-group {{ border-bottom: 1px solid var(--border-default); padding-bottom: 1.5rem; margin-bottom: 2rem; }}
+        .cal-month-day {{ font-size: 2.4rem; font-weight: 700; color: var(--text-white); line-height: 1.1; transition: color 0.2s ease; }}
+        .left-calendar-card:hover .cal-month-day {{ color: var(--accent-green); }}
+        .cal-full-date {{ font-size: 0.95rem; color: var(--text-muted); margin-top: 0.5rem; }}
+        .quote-content {{ font-family: "STSong", "SimSun", serif; font-size: 1.2rem; line-height: 1.8; color: #d1d1d1; text-align: justify; margin-bottom: auto; }}
+        .quote-meta {{ font-size: 0.8rem; color: var(--text-muted); line-height: 1.6; margin-top: 2rem; }}
         
-        .left-calendar-card:hover {{
-            border-color: var(--accent-green);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-        }}
-        
-        .calendar-date-group {{
-            border-bottom: 1px solid var(--border-default);
-            padding-bottom: 1.5rem;
-            margin-bottom: 2rem;
-        }}
-        
-        /* 🌟 优化：左侧大日期文字过渡效果 */
-        .cal-month-day {{
-            font-size: 2.4rem;
-            font-weight: 700;
-            color: var(--text-white); /* 默认回归高亮的纯白色，增强视觉统一 */
-            letter-spacing: -0.5px;
-            line-height: 1.1;
-            transition: color 0.2s ease;
-        }}
-        
-        /* 🌟 优化点 1：左侧卡片 hover 时，大日期变为翠绿色 */
-        .left-calendar-card:hover .cal-month-day {{
-            color: var(--accent-green);
-        }}
-        
-        .cal-full-date {{
-            font-size: 1rem;
-            color: var(--text-muted);
-            margin-top: 0.5rem;
-        }}
-        
-        .bookmark-image-container {{
-            width: 100%;
-            height: 160px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 2rem;
-            background: #111214;
-            border-radius: 12px;
-            overflow: hidden;
-        }}
-        
-        .custom-bookmark-img {{
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            filter: grayscale(100%) contrast(120%);
-            opacity: 0.7;
-        }}
-        
-        .quote-content {{
-            font-family: "STSong", "SimSun", "Georgia", serif;
-            font-size: 1.2rem;
-            line-height: 1.8;
-            color: #d1d1d1;
-            text-align: justify;
-            margin-bottom: auto;
-        }}
-        
-        .quote-meta {{
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            line-height: 1.6;
-            margin-top: 2rem;
-        }}
-        
-        .right-layout {{
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }}
-        
-        /* 3×2 数据网格 */
-        .stats-grid {{
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.2rem;
-        }}
-        
+        /* 右侧仪表盘面板 */
+        .right-layout {{ display: flex; flex-direction: column; gap: 1.5rem; }}
+        .stats-grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }}
         .stat-card {{
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-default);
-            border-radius: 16px;
-            padding: 1.8rem 1.6rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            min-height: 140px;
-            position: relative;
+            background-color: var(--bg-card); border: 1px solid var(--border-default); border-radius: 16px;
+            padding: 1.8rem 1.6rem; display: flex; flex-direction: column; justify-content: space-between;
+            min-height: 140px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }}
+        .stat-card:hover {{ border-color: var(--accent-green); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); }}
+        .stat-card:hover .stat-value-box {{ color: var(--accent-green); }}
+        .stat-label {{ font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }}
+        .stat-value-box {{ font-size: 3.2rem; font-weight: 700; color: var(--text-white); line-height: 1; margin-top: 0.6rem; letter-spacing: -1px; transition: color 0.2s ease; }}
+        .stat-unit {{ font-size: 0.95rem; color: var(--text-muted); margin-left: 0.3rem; }}
+        
+        .progress-container {{ width: 100%; height: 5px; background-color: #222428; border-radius: 3px; margin-top: auto; overflow: hidden; }}
+        .progress-bar {{ height: 100%; background-color: var(--accent-green); border-radius: 3px; }}
+        
+        .heatmap-card {{ background-color: var(--bg-card); border: 1px solid var(--border-default); border-radius: 16px; padding: 2rem; transition: all 0.25s ease; }}
+        .heatmap-card:hover {{ border-color: var(--accent-green); }}
+        .heatmap-title {{ font-size: 1.15rem; font-weight: 600; margin-bottom: 0.2rem; }}
+        .heatmap-subtitle {{ font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }}
+        .heatmap-grid {{ display: grid; grid-template-columns: repeat(53, 1fr); grid-auto-flow: column; grid-template-rows: repeat(7, 1fr); gap: 4px; }}
+        .day-cell {{ width: 12px; height: 12px; background-color: #0a0b0d; border-radius: 3px; }}
+        .day-cell.read {{ background-color: var(--accent-green); }}
+        .day-cell.future {{ opacity: 0.15; }}
+        
+        /* 🍏 核心新增 2：V3 顶配版 Book Highlights 模块样式 */
+        .library-section-container {{ margin-top: 2rem; }}
+        .library-block-header {{ display: flex; align-items: center; gap: 0.6rem; font-size: 1.3rem; font-weight: 600; margin-bottom: 1.5rem; }}
+        .library-block-header span.icon {{ color: var(--accent-green); }}
+        
+        .premium-library-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }}
+        
+        .premium-book-item {{ cursor: pointer; transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); }}
+        
+        /* 2、实现稍微放大、绿色边框、向内扩散高斯模糊的硬核微光特效 */
+        .book-cover-plate {{
+            width: 100%; aspect-ratio: 3 / 4; border-radius: 14px;
+            background-color: #1a1d21; border: 1px solid var(--border-default);
+            display: flex; align-items: center; justify-content: center;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative; overflow: hidden;
         }}
         
-        .stat-card:hover {{
-            border-color: var(--accent-green);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        .premium-book-item:hover {{
+            transform: scale(1.03); /* 稍微放大 */
         }}
         
-        .stat-label {{
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
+        .premium-book-item:hover .book-cover-plate {{
+            border-color: var(--accent-green); /* 边缘为绿色 */
+            /* 🌟 核心魔法：利用内发光 inset 实现高斯模糊向内扩散特效 */
+            box-shadow: 
+                0 0 20px rgba(60, 208, 112, 0.2),
+                inset 0 0 24px rgba(60, 208, 112, 0.4); 
         }}
         
-        /* 🌟 优化：核心大数字增加颜色过渡延迟 */
-        .stat-value-box {{
-            font-size: 3.2rem;
-            font-weight: 700;
-            color: var(--text-white); /* 默认状态为高对比度纯白 */
-            line-height: 1;
-            margin-top: 0.6rem;
-            letter-spacing: -1px;
-            transition: color 0.2s ease; /* 保证颜色变化如丝般顺滑 */
-        }}
+        .book-cover-core-icon {{ font-size: 2.2rem; opacity: 0.3; transition: all 0.25s ease; }}
+        .premium-book-item:hover .book-cover-core-icon {{ opacity: 0.8; transform: scale(1.1); }}
         
-        /* 🌟 优化点 1&2：当数字指标卡片被 hover 选中时，内部的纯白数字瞬间精准变成绿色 */
-        .stat-card:hover .stat-value-box {{
-            color: var(--accent-green);
-        }}
+        /* 高级封面渐变背景皮肤 */
+        .gradient-skin-1 {{ background: linear-gradient(135deg, #1b2820 0%, #141619 100%); }}
+        .gradient-skin-2 {{ background: linear-gradient(135deg, #19222d 0%, #141619 100%); }}
+        .gradient-skin-3 {{ background: linear-gradient(135deg, #2a251b 0%, #141619 100%); }}
+        .gradient-skin-4 {{ background: linear-gradient(135deg, #241c2d 0%, #141619 100%); }}
         
-        .stat-unit {{
-            font-size: 0.95rem;
-            color: var(--text-muted);
-            font-weight: 500;
-            margin-left: 0.3rem;
-            letter-spacing: 0;
-            transition: color 0.2s ease;
-        }}
+        .book-info-panel {{ padding: 0.8rem 0.2rem; }}
+        .premium-book-title {{ font-size: 0.95rem; font-weight: 600; color: var(--text-white); margin-bottom: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+        .premium-book-author {{ font-size: 0.8rem; color: #8a8e94; margin-bottom: 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+        .premium-book-highlights-count {{ font-size: 0.75rem; font-weight: 700; color: var(--accent-green); letter-spacing: 0.5px; }}
         
-        /* 单位小字也同步微微转绿，提升视觉细腻度 */
-        .stat-card:hover .stat-unit {{
-            color: rgba(60, 208, 112, 0.7);
+        /* 🍏 核心新增 3：全量对齐 image_d71407.png 的原生高保真大弹窗层 */
+        .modal-overlay {{
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(5, 6, 8, 0.85); backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 2000; opacity: 0; pointer-events: none;
+            transition: opacity 0.3s ease;
         }}
+        .modal-overlay.active {{ opacity: 1; pointer-events: auto; }}
         
-        .progress-container {{
-            width: 100%;
-            height: 5px;
-            background-color: #26282b;
-            border-radius: 3px;
-            margin-top: auto;
-            overflow: hidden;
+        .modal-window-wrapper {{
+            width: 100%; max-width: 780px; background-color: #141619;
+            border: 1px solid var(--border-default); border-radius: 16px;
+            display: flex; flex-direction: column; max-height: 85vh;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6); transform: translateY(20px);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }}
+        .modal-overlay.active .modal-window-wrapper {{ transform: translateY(0); }}
         
-        .progress-bar {{
-            height: 100%;
-            background-color: var(--accent-green);
-            border-radius: 3px;
-            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }}
+        .modal-header-bar {{ padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-default); display: flex; justify-content: space-between; align-items: center; }}
+        .modal-book-title {{ font-size: 1.3rem; font-weight: 600; color: var(--text-white); }}
+        .modal-book-author {{ font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem; }}
+        .modal-close-btn {{ font-size: 1.5rem; color: var(--text-muted); cursor: pointer; transition: color 0.2s; background: none; border: none; }}
+        .modal-close-btn:hover {{ color: var(--text-white); }}
         
-        /* 🌟 隔离审查点 3：阅读热力统计卡片（Contribution Graph）仅保留外框变绿，文字和内部格子不发生任何颜色污染 */
-        .heatmap-card {{
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-default);
-            border-radius: 16px;
-            padding: 2rem;
-            transition: all 0.25s ease;
-        }}
+        .modal-scroll-body {{ padding: 1.5rem 2rem; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 1.2rem; }}
+        /* 优雅美化弹窗滚动条 */
+        .modal-scroll-body::-webkit-scrollbar {{ width: 6px; }}
+        .modal-scroll-body::-webkit-scrollbar-thumb {{ background-color: #2b2e33; border-radius: 3px; }}
         
-        .heatmap-card:hover {{
-            border-color: var(--accent-green); /* 仅外框产生激活态 */
-        }}
+        .modal-clipping-card {{ background-color: #1a1d21; border: 1px solid var(--border-default); border-radius: 12px; padding: 1.5rem; position: relative; }}
+        .modal-clipping-text {{ font-size: 1.05rem; color: #e2e2e2; line-height: 1.7; font-style: italic; font-family: "STSong", "SimSun", serif; text-align: justify; }}
+        .modal-clipping-text::before {{ content: "“"; font-size: 1.5rem; color: var(--accent-green); margin-right: 0.2rem; font-family: sans-serif; }}
+        .modal-clipping-text::after {{ content: "”"; font-size: 1.5rem; color: var(--accent-green); margin-left: 0.2rem; font-family: sans-serif; }}
         
-        .heatmap-title {{
-            font-size: 1.15rem;
-            font-weight: 600;
-            margin-bottom: 0.2rem;
-            color: var(--text-white);
-        }}
+        .modal-footer-bar {{ padding: 1.2rem 2rem; border-top: 1px solid var(--border-default); display: flex; justify-content: flex-end; }}
+        .modal-done-btn {{ background-color: var(--accent-green); color: #000000; font-weight: 700; border: none; padding: 0.6rem 2rem; border-radius: 8px; cursor: pointer; font-size: 0.95rem; transition: opacity 0.2s; }}
+        .modal-done-btn:hover {{ opacity: 0.9; }}
         
-        .heatmap-subtitle {{
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 1.8rem;
-        }}
-        
-        .heatmap-wrapper {{
-            overflow-x: auto;
-            padding-bottom: 0.5rem;
-        }}
-        
-        .heatmap-container {{
-            display: inline-grid;
-            grid-template-rows: auto 1fr;
-            gap: 6px;
-        }}
-        
-        .heatmap-months {{
-            display: grid;
-            grid-template-columns: repeat(53, 1fr);
-            gap: 4px;
-            padding-bottom: 4px;
-        }}
-        
-        .month-label {{
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            font-weight: 500;
-        }}
-        
-        .heatmap-grid {{
-            display: grid;
-            grid-template-columns: repeat(53, 1fr);
-            grid-auto-flow: column;
-            grid-template-rows: repeat(7, 1fr);
-            gap: 4px;
-        }}
-        
-        .day-cell {{
-            width: 12px;
-            height: 12px;
-            background-color: #0d0e10;
-            border-radius: 3px;
-            cursor: pointer;
-            transition: all 0.1s ease;
-        }}
-        
-        .day-cell.read {{
-            background-color: var(--accent-green);
-        }}
-        
-        .day-cell.future {{
-            opacity: 0.15;
-            cursor: default;
-        }}
-        
-        .day-cell:not(.future):hover {{
-            outline: 2px solid var(--text-white);
-            outline-offset: -1px;
-            z-index: 10;
-        }}
-        
-        footer {{
-            text-align: center;
-            margin-top: 3rem;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-        }}
-        
-        .footer-links a {{
-            color: var(--accent-green);
-            text-decoration: none;
-            margin: 0 0.4rem;
-        }}
-        
-        .footer-links a:hover {{
-            text-decoration: underline;
-        }}
-        
-        .last-updated {{
-            margin-top: 0.6rem;
-            font-size: 0.75rem;
-            color: #3e4145;
-        }}
-        
-        .tooltip {{
-            position: fixed;
-            background: #26282b;
-            color: var(--text-white);
-            border: 1px solid #3e4145;
-            padding: 6px 10px;
-            font-size: 11px;
-            border-radius: 6px;
-            white-space: nowrap;
-            pointer-events: none;
-            z-index: 1000;
-            font-weight: 500;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-        }}
-        
-        @media (max-width: 968px) {{
-            .main-grid {{ grid-template-columns: 1fr; }}
-            .stats-grid {{ grid-template-columns: repeat(2, 1fr); }}
-        }}
+        @media (max-width: 1024px) {{ .premium-library-grid {{ grid-template-columns: repeat(2, 1fr); }} }}
+        @media (max-width: 768px) {{ .main-grid {{ grid-template-columns: 1fr; }} .premium-library-grid {{ grid-template-columns: 1fr; }} }}
     </style>
 </head>
 <body>
     <div class="dashboard-container">
         <header>
-            <h1>Creative Minimalist Reading Dashboard v2</h1>
-            <p class="description">A reading activity journal and tracker dashboard for book lovers.</p>
+            <h1>Creative Minimalist Reading Dashboard v3</h1>
+            <p class="description">A premium reading activity journal and micro-database tracker.</p>
         </header>
         
         <div class="main-grid">
@@ -572,119 +410,100 @@ def generate_html(reading_data, output_file="index.html"):
                     <div class="cal-month-day">{month_en} {day_num}</div>
                     <div class="cal-full-date">{full_date_en}</div>
                 </div>
-                
-                <div class="bookmark-image-container" id="bookmarkContainer">
-                    <img class="custom-bookmark-img" src="bookmark.png" alt="Bookmark Visual Anchor" onerror="document.getElementById('bookmarkContainer').style.display='none';">
-                </div>
-                
-                <div class="quote-content">
-                    “我们皆说起阳光与歌声，说起我们小时候夏天的事情，那些童年的日子悠长恬静，一天有现在二十天那样长。”
-                </div>
-                <div class="quote-meta">
-                    《我孤独地漫游，如一朵云：华兹华斯抒情诗选》之《蝴蝶》<br>
-                    诗人：威廉·华兹华斯 (William Wordsworth)
-                </div>
+                <div class="quote-content">“读书不是为了雄辩和驳斥，也不是为了轻信和盲从，而是为了思考和权衡。”</div>
+                <div class="quote-meta">《谈读书》 · 弗朗西斯·培根</div>
             </div>
             
             <div class="right-layout">
                 <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-label">Total Days</div><div class="stat-value-box">{stats['total_days']}<span class="stat-unit">days</span></div></div>
                     <div class="stat-card">
-                        <div class="stat-label">Total Days</div>
-                        <div class="stat-value-box">{stats['total_days']}<span class="stat-unit">days</span></div>
+                        <div class="stat-label">This Month</div><div class="stat-value-box">{stats['this_month_days']}<span class="stat-unit">days</span></div>
+                        <div class="progress-container"><div class="progress-bar" style="width: {stats['this_month_percent']}%"></div></div>
                     </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-label">This Month</div>
-                        <div class="stat-value-box">{stats['this_month_days']}<span class="stat-unit">days</span></div>
-                        <div style="margin-top: 1rem; width: 100%;">
-                            <div class="progress-container" title="本月进度: {stats['this_month_percent']}%">
-                                <div class="progress-bar" style="width: {stats['this_month_percent']}%"></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-label">Last Month</div>
-                        <div class="stat-value-box">{stats['last_month_days']}<span class="stat-unit">days</span></div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-label">Current Streak</div>
-                        <div class="stat-value-box">{stats['current_streak']}<span class="stat-unit">days</span></div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-label">Longest Streak</div>
-                        <div class="stat-value-box">{stats['longest_streak']}<span class="stat-unit">days</span></div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-label">Largest Streak</div>
-                        <div class="stat-value-box">{stats['largest_streak']}<span class="stat-unit">days</span></div>
-                    </div>
+                    <div class="stat-card"><div class="stat-label">Last Month</div><div class="stat-value-box">{stats['last_month_days']}<span class="stat-unit">days</span></div></div>
                 </div>
                 
                 <div class="heatmap-card">
                     <div class="heatmap-title">Contribution Graph</div>
                     <div class="heatmap-subtitle">今年共阅读 {stats['this_year_days']} 天</div>
-                    
-                    <div class="heatmap-wrapper">
-                        <div class="heatmap-container">
-{heatmap_html}
-                        </div>
-                    </div>
+                    {heatmap_html}
                 </div>
             </div>
         </div>
         
-        <footer>
-            <p>Keep Reading · Keep Growing</p>
-            <div class="footer-links">
-                <a href="https://github.com" target="_blank">GitHub</a> · 
-                <a href="https://www.amazon.com/kindle/reading/insights" target="_blank">Kindle</a>
+        <section class="library-section-container">
+            <div class="library-block-header">
+                <span class="icon">📗</span>
+                <span>Book Highlights (书摘记录)</span>
             </div>
-            <p class="last-updated">Last updated: {last_updated}</p>
-        </footer>
+            <div class="premium-library-grid">
+                {books_html}
+            </div>
+        </section>
+    </div>
+    
+    <div class="modal-overlay" id="clippingModal" onclick="closeClippingModal(event)">
+        <div class="modal-window-wrapper" onclick="event.stopPropagation()">
+            <div class="modal-header-bar">
+                <div>
+                    <div class="modal-book-title" id="modalBookTitle">Book Title</div>
+                    <div class="modal-book-author" id="modalBookAuthor">Author Name</div>
+                </div>
+                <button class="modal-close-btn" onclick="closeClippingModal(null)">✕</button>
+            </div>
+            <div class="modal-scroll-body" id="modalScrollBody">
+                </div>
+            <div class="modal-footer-bar">
+                <button class="modal-done-btn" onclick="closeClippingModal(null)">Done</button>
+            </div>
+        </div>
     </div>
     
     <script>
-        document.querySelectorAll('.day-cell:not(.future)').forEach(cell => {{
-            cell.addEventListener('mouseenter', (e) => {{
-                const rect = e.target.getBoundingClientRect();
-                const tooltip = document.createElement('div');
-                tooltip.className = 'tooltip';
-                tooltip.textContent = e.target.getAttribute('title');
-                tooltip.style.cssText = `
-                    top: ${{rect.top - 32}}px;
-                    left: ${{rect.left + rect.width / 2}}px;
-                    transform: translateX(-50%);
-                `;
-                document.body.appendChild(tooltip);
-                e.target._tooltip = tooltip;
+        // 将清洗完的结构化书摘资产冷灌注进前端
+        const LAUNCHPAD_DATABASE = {json.dumps(js_clippings_payload, ensure_ascii=False)};
+        
+        function openClippingModal(bookId) {{
+            const bookData = LAUNCHPAD_DATABASE[bookId];
+            if (!bookData) return;
+            
+            document.getElementById('modalBookTitle').textContent = bookData.title;
+            document.getElementById('modalBookAuthor').textContent = bookData.author;
+            
+            const scrollBody = document.getElementById('modalScrollBody');
+            scrollBody.innerHTML = ''; // 擦除历史残余
+            
+            bookData.clippings.forEach(clip => {{
+                const card = document.createElement('div');
+                card.className = 'modal-clipping-card';
+                card.innerHTML = `<div class="modal-clipping-text">${{clip.text}}</div>`;
+                scrollBody.appendChild(card);
             }});
             
-            cell.addEventListener('mouseleave', (e) => {{
-                if (e.target._tooltip) {{
-                    e.target._tooltip.remove();
-                    delete e.target._tooltip;
-                }}
-            }});
-        }});
+            document.getElementById('clippingModal').classList.add('active');
+            document.body.style.overflow = 'hidden'; // 锁死底层背板滚动条
+        }}
+        
+        function closeClippingModal(event) {{
+            if (event && event.target !== document.getElementById('clippingModal') && event !== null) return;
+            document.getElementById('clippingModal').classList.remove('active');
+            document.body.style.overflow = ''; // 物理释放滚动条
+        }}
     </script>
 </body>
 </html>"""
     
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(html)
-    
-    print(f"✅ Enhanced Dashboard v2 HTML generated successfully: {output_file}")
+    print(f"🚀 V3 Master Dashboard successfully compiled: {output_file}")
 
 
 def main():
-    print("📖 Running Premium Dynamic Analytics Engine...")
-    reading_data = load_reading_data()
-    generate_html(reading_data)
-    print("🏁 Optimization Done!")
+    print("📖 Initializing V3 Premium Analytical Engine...")
+    combined_data = parse_clippings_to_json()
+    generate_html(combined_data)
+    print("🏁 Version 3 Core通关!")
 
 
 if __name__ == "__main__":
