@@ -1,4 +1,4 @@
-"""Generate GitHub Dark Style Reading Dashboard v3 - Premium Library & Self-Contained Edition"""
+"""Generate GitHub Dark Style Reading Dashboard v3 - Premium Library & Zero Syntax Error Edition"""
 
 import json
 import os
@@ -7,7 +7,7 @@ import calendar
 from datetime import datetime, timedelta
 from pathlib import Path
 
-# 🍏 仅引入 100% 确保存在的核心数据变量，彻底绝育 OUTPUT_HTML_FILE 导致的解析假死
+# 🍏 引入核心配置路径
 from config import DATA_DIR, READING_DATA_FILE, CLIPPINGS_FILE
 
 
@@ -135,9 +135,10 @@ def calculate_stats(reading_days):
     current_streak = 0
     check_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
     
-    if today_str not in reading_days && yesterday_str in reading_days:
+    # 🌟 核心BugFix：将原本有语法毒素的 && 物理清洗并平替为标准的 Python and 逻辑关键字
+    if today_str not in reading_days and yesterday_str in reading_days:
         check_date = check_date - timedelta(days=1)
-    elif today_str not in reading_days && yesterday_str not in reading_days:
+    elif today_str not in reading_days and yesterday_str not in reading_days:
         current_streak = 0
         check_date = None
         
@@ -406,7 +407,7 @@ def generate_html(reading_data, output_file=None):
                     <div class="cal-month-day">{month_en} {day_num}</div>
                     <div class="cal-full-date">{full_date_en}</div>
                 </div>
-                <div class="quote-content">“读书不是为了雄辩和驳斥，也不是为了轻信和盲从，而是为了思考和权衡。”</div>
+                <div class="quote-content">“读书不是为了雄辩 and 驳斥，也不是为了轻信 and 盲从，而是为了思考 and 权衡。”</div>
                 <div class="quote-meta">《谈读书》 · 弗朗西斯·培根</div>
             </div>
             
@@ -488,15 +489,12 @@ def generate_html(reading_data, output_file=None):
 </body>
 </html>"""
     
-    # 🌟 核心防爆修改：不再从外部 config 中 import 可能会缺失的路径变量
-    # 直接利用 100% 确保存在的 READING_DATA_FILE 绝对物理拓扑结构，反向倒推项目根目录
+    # 自动推导发布路径
     if output_file is None:
         try:
-            # 找到 data/reading_data.json 的父目录的父目录，即为项目主根目录
             project_root = Path(str(READING_DATA_FILE)).parent.parent
             output_path = project_root / "index.html"
         except:
-            # 如果万一发生解析偏折，采用当前执行环境兜底
             output_path = Path(__file__).parent.parent / "index.html"
     else:
         output_path = Path(output_file)
