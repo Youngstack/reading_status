@@ -1,4 +1,4 @@
-"""Generate GitHub Dark Style Reading Dashboard v3 - Premium Library Edition"""
+"""Generate GitHub Dark Style Reading Dashboard v3 - Premium Library & BugFix Edition"""
 
 import json
 import os
@@ -6,6 +6,7 @@ import re
 import calendar
 from datetime import datetime, timedelta
 
+# 🍏 引入核心配置路径
 from config import DATA_DIR, READING_DATA_FILE, CLIPPINGS_FILE
 
 
@@ -17,13 +18,17 @@ def parse_clippings_to_json():
     reading_days = {}
     books_dict = {}
     
-    if not os.path.exists(CLIPPINGS_FILE):
-        if os.path.exists(READING_DATA_FILE):
-            with open(READING_DATA_FILE, "r", encoding="utf-8") as f:
+    # 强制将可能传入的 Path 对象安全转换为标准字符串
+    clippings_path = str(CLIPPINGS_FILE)
+    reading_data_path = str(READING_DATA_FILE)
+    
+    if not os.path.exists(clippings_path):
+        if os.path.exists(reading_data_path):
+            with open(reading_data_path, "r", encoding="utf-8") as f:
                 return json.load(f)
         return {"reading_days": {}, "books": {}, "total_days": 0, "last_updated": ""}
 
-    with open(CLIPPINGS_FILE, "r", encoding="utf-8-sig") as f:
+    with open(clippings_path, "r", encoding="utf-8-sig") as f:
         content = f.read()
     
     entries = content.split("==========\n")
@@ -96,7 +101,7 @@ def parse_clippings_to_json():
         "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
     
-    with open(READING_DATA_FILE, "w", encoding="utf-8") as f:
+    with open(reading_data_path, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False, indent=4)
         
     return result
@@ -194,6 +199,14 @@ def generate_heatmap_data(reading_days):
 
 
 def generate_html(reading_data, output_file="index.html"):
+    """Generate HTML layout with high-contrast text and interactive popups"""
+    
+    # 🌟 核心修正：在函数入口处死锁系统时间，确保 month_en 和 day_num 绝对定义生效
+    now = datetime.now()
+    month_en = now.strftime("%B").upper()
+    day_num = now.day
+    full_date_en = now.strftime("%B %d, %Y")
+    
     reading_days = reading_data.get("reading_days", {})
     books = reading_data.get("books", {})
     
@@ -210,9 +223,8 @@ def generate_html(reading_data, output_file="index.html"):
             heatmap_html += f'  <div class="{css_class}" title="{day["date"]}"></div>\n'
     heatmap_html += '</div>\n'
     
-    # 🌟 核心重构 2：全量对齐 image_d71482.jpg 极客卡片网格渲染
+    # 渲染 V3 版 Book Highlights 模块卡片网格
     books_html = ""
-    # 内联书籍划线元数据库，作为全局 JavaScript 变量供弹窗瞬时加载
     js_clippings_payload = {}
     
     for idx, (title, info) in enumerate(books.items()):
@@ -223,7 +235,6 @@ def generate_html(reading_data, output_file="index.html"):
             "clippings": info["clippings"]
         }
         
-        # 自动循环生成渐变抽象封面底盘，深度还原高阶质感
         gradient_index = (idx % 4) + 1
         
         books_html += f"""
@@ -238,7 +249,8 @@ def generate_html(reading_data, output_file="index.html"):
             </div>
         </div>"""
 
-    now = datetime.now()
+    # 兼容最后一项落盘更新标签
+    last_updated = now.strftime('%Y-%m-%d')
     
     html = f"""<!DOCTYPE html>
 <html lang="zh-CN">
@@ -270,7 +282,6 @@ def generate_html(reading_data, output_file="index.html"):
         
         .main-grid {{ display: grid; grid-template-columns: 320px 1fr; gap: 1.5rem; margin-bottom: 2rem; }}
         
-        /* 左侧金句卡片 */
         .left-calendar-card {{
             background-color: var(--bg-card); border: 1px solid var(--border-default);
             border-radius: 16px; padding: 2rem 1.8rem; display: flex; flex-direction: column; min-height: 600px;
@@ -284,7 +295,6 @@ def generate_html(reading_data, output_file="index.html"):
         .quote-content {{ font-family: "STSong", "SimSun", serif; font-size: 1.2rem; line-height: 1.8; color: #d1d1d1; text-align: justify; margin-bottom: auto; }}
         .quote-meta {{ font-size: 0.8rem; color: var(--text-muted); line-height: 1.6; margin-top: 2rem; }}
         
-        /* 右侧仪表盘面板 */
         .right-layout {{ display: flex; flex-direction: column; gap: 1.5rem; }}
         .stats-grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }}
         .stat-card {{
@@ -310,16 +320,13 @@ def generate_html(reading_data, output_file="index.html"):
         .day-cell.read {{ background-color: var(--accent-green); }}
         .day-cell.future {{ opacity: 0.15; }}
         
-        /* 🍏 核心新增 2：V3 顶配版 Book Highlights 模块样式 */
         .library-section-container {{ margin-top: 2rem; }}
         .library-block-header {{ display: flex; align-items: center; gap: 0.6rem; font-size: 1.3rem; font-weight: 600; margin-bottom: 1.5rem; }}
         .library-block-header span.icon {{ color: var(--accent-green); }}
         
         .premium-library-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }}
-        
         .premium-book-item {{ cursor: pointer; transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); }}
         
-        /* 2、实现稍微放大、绿色边框、向内扩散高斯模糊的硬核微光特效 */
         .book-cover-plate {{
             width: 100%; aspect-ratio: 3 / 4; border-radius: 14px;
             background-color: #1a1d21; border: 1px solid var(--border-default);
@@ -328,22 +335,15 @@ def generate_html(reading_data, output_file="index.html"):
             position: relative; overflow: hidden;
         }}
         
-        .premium-book-item:hover {{
-            transform: scale(1.03); /* 稍微放大 */
-        }}
-        
+        .premium-book-item:hover {{ transform: scale(1.03); }}
         .premium-book-item:hover .book-cover-plate {{
-            border-color: var(--accent-green); /* 边缘为绿色 */
-            /* 🌟 核心魔法：利用内发光 inset 实现高斯模糊向内扩散特效 */
-            box-shadow: 
-                0 0 20px rgba(60, 208, 112, 0.2),
-                inset 0 0 24px rgba(60, 208, 112, 0.4); 
+            border-color: var(--accent-green);
+            box-shadow: 0 0 20px rgba(60, 208, 112, 0.2), inset 0 0 24px rgba(60, 208, 112, 0.4); 
         }}
         
         .book-cover-core-icon {{ font-size: 2.2rem; opacity: 0.3; transition: all 0.25s ease; }}
         .premium-book-item:hover .book-cover-core-icon {{ opacity: 0.8; transform: scale(1.1); }}
         
-        /* 高级封面渐变背景皮肤 */
         .gradient-skin-1 {{ background: linear-gradient(135deg, #1b2820 0%, #141619 100%); }}
         .gradient-skin-2 {{ background: linear-gradient(135deg, #19222d 0%, #141619 100%); }}
         .gradient-skin-3 {{ background: linear-gradient(135deg, #2a251b 0%, #141619 100%); }}
@@ -354,7 +354,7 @@ def generate_html(reading_data, output_file="index.html"):
         .premium-book-author {{ font-size: 0.8rem; color: #8a8e94; margin-bottom: 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
         .premium-book-highlights-count {{ font-size: 0.75rem; font-weight: 700; color: var(--accent-green); letter-spacing: 0.5px; }}
         
-        /* 🍏 核心新增 3：全量对齐 image_d71407.png 的原生高保真大弹窗层 */
+        /* Modal Window Box Drawer Styles */
         .modal-overlay {{
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(5, 6, 8, 0.85); backdrop-filter: blur(8px);
@@ -380,21 +380,18 @@ def generate_html(reading_data, output_file="index.html"):
         .modal-close-btn:hover {{ color: var(--text-white); }}
         
         .modal-scroll-body {{ padding: 1.5rem 2rem; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 1.2rem; }}
-        /* 优雅美化弹窗滚动条 */
         .modal-scroll-body::-webkit-scrollbar {{ width: 6px; }}
         .modal-scroll-body::-webkit-scrollbar-thumb {{ background-color: #2b2e33; border-radius: 3px; }}
         
-        .modal-clipping-card {{ background-color: #1a1d21; border: 1px solid var(--border-default); border-radius: 12px; padding: 1.5rem; position: relative; }}
+        .modal-clipping-card {{ background-color: #1a1d21; border: 1px solid var(--border-default); border-radius: 12px; padding: 1.5rem; }}
         .modal-clipping-text {{ font-size: 1.05rem; color: #e2e2e2; line-height: 1.7; font-style: italic; font-family: "STSong", "SimSun", serif; text-align: justify; }}
-        .modal-clipping-text::before {{ content: "“"; font-size: 1.5rem; color: var(--accent-green); margin-right: 0.2rem; font-family: sans-serif; }}
-        .modal-clipping-text::after {{ content: "”"; font-size: 1.5rem; color: var(--accent-green); margin-left: 0.2rem; font-family: sans-serif; }}
+        .modal-clipping-text::before {{ content: "“"; font-size: 1.5rem; color: var(--accent-green); margin-right: 0.2rem; }}
+        .modal-clipping-text::after {{ content: "”"; font-size: 1.5rem; color: var(--accent-green); margin-left: 0.2rem; }}
         
         .modal-footer-bar {{ padding: 1.2rem 2rem; border-top: 1px solid var(--border-default); display: flex; justify-content: flex-end; }}
-        .modal-done-btn {{ background-color: var(--accent-green); color: #000000; font-weight: 700; border: none; padding: 0.6rem 2rem; border-radius: 8px; cursor: pointer; font-size: 0.95rem; transition: opacity 0.2s; }}
-        .modal-done-btn:hover {{ opacity: 0.9; }}
+        .modal-done-btn {{ background-color: var(--accent-green); color: #000000; font-weight: 700; border: none; padding: 0.6rem 2rem; border-radius: 8px; cursor: pointer; font-size: 0.95rem; }}
         
-        @media (max-width: 1024px) {{ .premium-library-grid {{ grid-template-columns: repeat(2, 1fr); }} }}
-        @media (max-width: 768px) {{ .main-grid {{ grid-template-columns: 1fr; }} .premium-library-grid {{ grid-template-columns: 1fr; }} }}
+        footer {{ text-align: center; margin-top: 3rem; color: var(--text-muted); font-size: 0.85rem; }}
     </style>
 </head>
 <body>
@@ -452,8 +449,7 @@ def generate_html(reading_data, output_file="index.html"):
                 </div>
                 <button class="modal-close-btn" onclick="closeClippingModal(null)">✕</button>
             </div>
-            <div class="modal-scroll-body" id="modalScrollBody">
-                </div>
+            <div class="modal-scroll-body" id="modalScrollBody"></div>
             <div class="modal-footer-bar">
                 <button class="modal-done-btn" onclick="closeClippingModal(null)">Done</button>
             </div>
@@ -461,7 +457,6 @@ def generate_html(reading_data, output_file="index.html"):
     </div>
     
     <script>
-        // 将清洗完的结构化书摘资产冷灌注进前端
         const LAUNCHPAD_DATABASE = {json.dumps(js_clippings_payload, ensure_ascii=False)};
         
         function openClippingModal(bookId) {{
@@ -472,7 +467,7 @@ def generate_html(reading_data, output_file="index.html"):
             document.getElementById('modalBookAuthor').textContent = bookData.author;
             
             const scrollBody = document.getElementById('modalScrollBody');
-            scrollBody.innerHTML = ''; // 擦除历史残余
+            scrollBody.innerHTML = '';
             
             bookData.clippings.forEach(clip => {{
                 const card = document.createElement('div');
@@ -482,21 +477,25 @@ def generate_html(reading_data, output_file="index.html"):
             }});
             
             document.getElementById('clippingModal').classList.add('active');
-            document.body.style.overflow = 'hidden'; // 锁死底层背板滚动条
+            document.body.style.overflow = 'hidden';
         }}
         
         function closeClippingModal(event) {{
             if (event && event.target !== document.getElementById('clippingModal') && event !== null) return;
             document.getElementById('clippingModal').classList.remove('active');
-            document.body.style.overflow = ''; // 物理释放滚动条
+            document.body.style.overflow = '';
         }}
     </script>
 </body>
 </html>"""
     
-    with open(output_file, "w", encoding="utf-8") as f:
+    # 修改原本硬编码输出，物理对齐 config.py 注册的绝对成品 HTML 路径
+    from config import OUTPUT_HTML_FILE
+    output_path = str(OUTPUT_HTML_FILE)
+    
+    with open(output_path, "w", encoding="utf-8") as f:
         f.write(html)
-    print(f"🚀 V3 Master Dashboard successfully compiled: {output_file}")
+    print(f"🚀 V3 Master Dashboard successfully compiled to: {output_path}")
 
 
 def main():
