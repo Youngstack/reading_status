@@ -1,7 +1,8 @@
-"""Generate GitHub Dark Style Reading Dashboard v2"""
+"""Generate GitHub Dark Style Reading Dashboard v2 - Enhanced UI Edition"""
 
 import json
 import os
+import calendar
 from datetime import datetime, timedelta
 
 from config import DATA_DIR, READING_DATA_FILE
@@ -17,7 +18,7 @@ def load_reading_data():
 
 
 def calculate_stats(reading_days):
-    """Calculate reading statistics matching v2 dashboard dashboards"""
+    """Calculate reading statistics matching enhanced dashboard"""
     if not reading_days:
         return {
             "total_days": 0,
@@ -26,7 +27,9 @@ def calculate_stats(reading_days):
             "last_month_days": 0,
             "current_streak": 0,
             "longest_streak": 0,
-            "largest_streak": 0
+            "largest_streak": 0,
+            "days_in_month": 30,  # 默认兜底
+            "this_month_percent": 0
         }
     
     now = datetime.now()
@@ -34,9 +37,13 @@ def calculate_stats(reading_days):
     current_year = now.year
     this_year_days = len([d for d in reading_days.keys() if d.startswith(str(current_year))])
     
-    # 当月统计
-    current_month = now.strftime("%Y-%m")
-    this_month_days = len([d for d in reading_days.keys() if d.startswith(current_month)])
+    # 当月统计与百分比动态计算
+    current_month_str = now.strftime("%Y-%m")
+    this_month_days = len([d for d in reading_days.keys() if d.startswith(current_month_str)])
+    
+    # 🌟 第一性原理：动态获取当前月份的绝对物理总天数（防爆闰年与大小月）
+    _, days_in_month = calendar.monthrange(now.year, now.month)
+    this_month_percent = round((this_month_days / days_in_month) * 100, 1) if days_in_month > 0 else 0
     
     # 上月统计
     first_of_this_month = now.replace(day=1)
@@ -52,7 +59,6 @@ def calculate_stats(reading_days):
     current_streak = 0
     check_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
     
-    # 如果今天还没读，从昨天开始算连续；如果今天读了，从今天开始算
     if today_str not in reading_days and yesterday_str in reading_days:
         check_date = check_date - timedelta(days=1)
     elif today_str not in reading_days and yesterday_str not in reading_days:
@@ -64,7 +70,7 @@ def calculate_stats(reading_days):
             current_streak += 1
             check_date = check_date - timedelta(days=1)
     
-    # 计算历史最长连续 Longest Streak & Largest Streak
+    # 计算历史最长连续 Longest Streak
     longest_streak = 0
     temp_streak = 0
     if sorted_dates:
@@ -89,7 +95,9 @@ def calculate_stats(reading_days):
         "last_month_days": last_month_days,
         "current_streak": current_streak,
         "longest_streak": longest_streak,
-        "largest_streak": longest_streak  # 仪表盘对应镜像指标
+        "largest_streak": longest_streak,
+        "days_in_month": days_in_month,
+        "this_month_percent": this_month_percent
     }
 
 
@@ -101,7 +109,6 @@ def generate_heatmap_data(reading_days):
     start_date = datetime(current_year, 1, 1)
     weeks = []
     
-    # 物理对齐：从 1 月 1 日所在周的周一开始绘制
     current_date = start_date - timedelta(days=start_date.weekday())
     end_of_year = datetime(current_year, 12, 31)
     
@@ -149,7 +156,7 @@ def generate_month_labels(weeks):
 
 
 def generate_html(reading_data, output_file="index.html"):
-    """Generate HTML layout exactly matching creative_minimalist_reading_dashboard_v2.png"""
+    """Generate HTML layout with enhanced high-contrast text and interactive selection hover effects"""
     
     reading_days = reading_data.get("reading_days", {})
     last_updated_raw = reading_data.get("last_updated", "")
@@ -170,7 +177,7 @@ def generate_html(reading_data, output_file="index.html"):
     weeks = generate_heatmap_data(reading_days)
     month_labels = generate_month_labels(weeks)
     
-    # 动态构建热力图部分
+    # 动态构建热力图
     heatmap_html = '<div class="heatmap-months">\n'
     for month in month_labels:
         heatmap_html += f'  <div class="month-label" style="grid-column: {month["index"] + 1};">{month["name"]}</div>\n'
@@ -192,7 +199,7 @@ def generate_html(reading_data, output_file="index.html"):
             heatmap_html += f'  <div class="{css_class}" title="{title}" data-date="{day["date"]}"></div>\n'
     heatmap_html += '</div>\n'
     
-    # 当前系统时间处理，渲染至左侧大卡片
+    # 时间面板解析
     now = datetime.now()
     month_en = now.strftime("%B").upper()
     day_num = now.day
@@ -203,7 +210,7 @@ def generate_html(reading_data, output_file="index.html"):
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Creative Minimalist Reading Dashboard v2</title>
+    <title>Enhanced Minimalist Reading Dashboard v2</title>
     <style>
         * {{
             margin: 0;
@@ -212,23 +219,23 @@ def generate_html(reading_data, output_file="index.html"):
         }}
         
         :root {{
-            --bg-main: #1a1c1e;          /* 极客暗黑主背景色 */
-            --bg-card: #212427;          /* 高级卡片背景色 */
-            --text-primary: #e2e2e2;     /* 主文字浅白 */
-            --text-muted: #8c9196;        /* 次要文字灰色 */
-            --accent-green: #4f9e66;      /* 标志性质感绿色 */
-            --border-color: #2b2e32;     /* 细腻卡片边框 */
-            --grid-empty: #212427;       /* 热力图空白格 */
+            --bg-main: #0d0e10;          /* 深黑色科技质感底色 */
+            --bg-card: #18191b;          /* 卡片内敛深灰色 */
+            --text-white: #ffffff;       /* 纯白数字，拉满对比度 */
+            --text-muted: #62676b;        /* 灰色小标签，对齐参考图 */
+            --accent-green: #3cd070;      /* 高亮翠绿 */
+            --border-default: #26282b;    /* 暗色默认轻边框 */
         }}
         
         body {{
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", sans-serif;
             background-color: var(--bg-main);
-            color: var(--text-primary);
+            color: var(--text-white);
             line-height: 1.5;
             padding: 3rem 2rem;
             display: flex;
             justify-content: center;
+            -webkit-font-smoothing: antialiased;
         }}
         
         .dashboard-container {{
@@ -236,7 +243,6 @@ def generate_html(reading_data, output_file="index.html"):
             max-width: 1200px;
         }}
         
-        /* 顶部标题栏 */
         header {{
             margin-bottom: 2.5rem;
         }}
@@ -244,7 +250,7 @@ def generate_html(reading_data, output_file="index.html"):
         h1 {{
             font-size: 2.2rem;
             font-weight: 600;
-            color: var(--text-primary);
+            letter-spacing: -0.5px;
             margin-bottom: 0.4rem;
         }}
         
@@ -253,7 +259,6 @@ def generate_html(reading_data, output_file="index.html"):
             color: var(--text-muted);
         }}
         
-        /* 主体黄金排版布局 */
         .main-grid {{
             display: grid;
             grid-template-columns: 320px 1fr;
@@ -261,19 +266,27 @@ def generate_html(reading_data, output_file="index.html"):
             align-items: start;
         }}
         
-        /* 左侧金句仪式感大卡片 */
+        /* 左侧金句卡片 */
         .left-calendar-card {{
             background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-default);
             border-radius: 16px;
             padding: 2rem 1.8rem;
             display: flex;
             flex-direction: column;
-            min-height: 600px;
+            min-height: 620px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }}
+        
+        /* 2、卡片增加选中态 Hover 特效 */
+        .left-calendar-card:hover {{
+            border-color: var(--accent-green);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
         }}
         
         .calendar-date-group {{
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-default);
             padding-bottom: 1.5rem;
             margin-bottom: 2rem;
         }}
@@ -292,14 +305,33 @@ def generate_html(reading_data, output_file="index.html"):
             margin-top: 0.5rem;
         }}
         
+        .bookmark-image-container {{
+            width: 100%;
+            height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2rem;
+            background: #111214;
+            border-radius: 12px;
+            overflow: hidden;
+        }}
+        
+        .custom-bookmark-img {{
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: grayscale(100%) contrast(120%);
+            opacity: 0.7;
+        }}
+        
         .quote-content {{
             font-family: "STSong", "SimSun", "Georgia", serif;
-            font-size: 1.25rem;
-            line-height: 2;
-            color: var(--text-primary);
-            letter-spacing: 0.5px;
-            margin-bottom: auto;
+            font-size: 1.2rem;
+            line-height: 1.8;
+            color: #d1d1d1;
             text-align: justify;
+            margin-bottom: auto;
         }}
         
         .quote-meta {{
@@ -309,7 +341,6 @@ def generate_html(reading_data, output_file="index.html"):
             margin-top: 2rem;
         }}
         
-        /* 右侧工作流卡片区 */
         .right-layout {{
             display: flex;
             flex-direction: column;
@@ -325,42 +356,79 @@ def generate_html(reading_data, output_file="index.html"):
         
         .stat-card {{
             background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 1.5rem;
+            border: 1px solid var(--border-default);
+            border-radius: 16px;
+            padding: 1.8rem 1.6rem;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            min-height: 120px;
+            min-height: 140px;
+            position: relative;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }}
         
+        /* 2、卡片增加选中态悬浮效果，且边缘变绿 */
+        .stat-card:hover {{
+            border-color: var(--accent-green);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }}
+        
+        /* 1、对齐参考图：大写置灰小标签 */
         .stat-label {{
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             color: var(--text-muted);
-            font-weight: 500;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
         }}
         
+        /* 1、对齐参考图：放大、纯白色字体的强悍数值展示 */
         .stat-value-box {{
-            font-size: 2rem;
+            font-size: 3.2rem;  /* 强行膨胀放大字体 */
             font-weight: 700;
-            color: var(--accent-green);
+            color: var(--text-white); /* 强行纯白化 */
             line-height: 1;
-            margin-top: 0.8rem;
+            margin-top: 0.6rem;
+            letter-spacing: -1px;
         }}
         
         .stat-unit {{
             font-size: 0.95rem;
             color: var(--text-muted);
-            font-weight: 400;
-            margin-left: 0.2rem;
+            font-weight: 500;
+            margin-left: 0.3rem;
+            letter-spacing: 0;
         }}
         
-        /* 底部贡献图卡片 */
+        /* 3、This Month 指标底部的隐藏百分比横条进度条通道 */
+        .progress-container {{
+            width: 100%;
+            height: 5px;
+            background-color: #26282b;
+            border-radius: 3px;
+            margin-top: auto;
+            overflow: hidden;
+        }}
+        
+        .progress-bar {{
+            height: 100%;
+            background-color: var(--accent-green); /* 仅用亮绿色填充区分 */
+            border-radius: 3px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }}
+        
+        /* 贡献图主卡片 */
         .heatmap-card {{
             background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-default);
             border-radius: 16px;
             padding: 2rem;
+            transition: all 0.25s ease;
+        }}
+        
+        .heatmap-card:hover {{
+            border-color: var(--accent-green);
         }}
         
         .heatmap-title {{
@@ -410,37 +478,32 @@ def generate_html(reading_data, output_file="index.html"):
         .day-cell {{
             width: 12px;
             height: 12px;
-            background-color: #1a1c1e;  /* 未打卡时对齐底色 */
+            background-color: #0d0e10;
             border-radius: 3px;
             cursor: pointer;
             transition: all 0.1s ease;
         }}
         
         .day-cell.read {{
-            background-color: var(--accent-green); /* 精准绿色打卡块 */
+            background-color: var(--accent-green);
         }}
         
         .day-cell.future {{
-            opacity: 0.2;
+            opacity: 0.15;
             cursor: default;
         }}
         
         .day-cell:not(.future):hover {{
-            outline: 2px solid var(--text-primary);
+            outline: 2px solid var(--text-white);
             outline-offset: -1px;
             z-index: 10;
         }}
         
-        /* 底部脚注面板 */
         footer {{
             text-align: center;
             margin-top: 3rem;
             color: var(--text-muted);
             font-size: 0.85rem;
-        }}
-        
-        .footer-links {{
-            margin-top: 0.5rem;
         }}
         
         .footer-links a {{
@@ -456,32 +519,27 @@ def generate_html(reading_data, output_file="index.html"):
         .last-updated {{
             margin-top: 0.6rem;
             font-size: 0.75rem;
-            color: #55585c;
+            color: #3e4145;
         }}
         
-        /* 浮动气泡（Tooltip）*/
         .tooltip {{
             position: fixed;
-            background: #2b2e32;
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-            padding: 5px 9px;
+            background: #26282b;
+            color: var(--text-white);
+            border: 1px solid #3e4145;
+            padding: 6px 10px;
             font-size: 11px;
             border-radius: 6px;
             white-space: nowrap;
             pointer-events: none;
             z-index: 1000;
             font-weight: 500;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
         }}
         
         @media (max-width: 968px) {{
-            .main-grid {{
-                grid-template-columns: 1fr;
-            }}
-            .stats-grid {{
-                grid-template-columns: repeat(2, 1fr);
-            }}
+            .main-grid {{ grid-template-columns: 1fr; }}
+            .stats-grid {{ grid-template-columns: repeat(2, 1fr); }}
         }}
     </style>
 </head>
@@ -493,11 +551,13 @@ def generate_html(reading_data, output_file="index.html"):
         </header>
         
         <div class="main-grid">
-            <!-- 左侧核心仪式感排版卡片 -->
             <div class="left-calendar-card">
                 <div class="calendar-date-group">
                     <div class="cal-month-day">{month_en} {day_num}</div>
                     <div class="cal-full-date">{full_date_en}</div>
+                </div>
+                <div class="bookmark-image-container">
+                    <img class="custom-bookmark-img" src="bookmark.png" alt="Bookmark Visual Anchor" onerror="this.style.display='none';">
                 </div>
                 <div class="quote-content">
                     “我们皆说起阳光与歌声，说起我们小时候夏天的事情，那些童年的日子悠长恬静，一天有现在二十天那样长。”
@@ -508,37 +568,44 @@ def generate_html(reading_data, output_file="index.html"):
                 </div>
             </div>
             
-            <!-- 右侧核心面板区 -->
             <div class="right-layout">
-                <!-- 3×2 数据矩阵 -->
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-label">Total Days</div>
                         <div class="stat-value-box">{stats['total_days']}<span class="stat-unit">days</span></div>
                     </div>
+                    
                     <div class="stat-card">
                         <div class="stat-label">This Month</div>
                         <div class="stat-value-box">{stats['this_month_days']}<span class="stat-unit">days</span></div>
+                        <div style="margin-top: 1rem; width: 100%;">
+                            <div class="progress-container" title="本月进度: {stats['this_month_percent']}%">
+                                <div class="progress-bar" style="width: {stats['this_month_percent']}%"></div>
+                            </div>
+                        </div>
                     </div>
+                    
                     <div class="stat-card">
                         <div class="stat-label">Last Month</div>
                         <div class="stat-value-box">{stats['last_month_days']}<span class="stat-unit">days</span></div>
                     </div>
+                    
                     <div class="stat-card">
                         <div class="stat-label">Current Streak</div>
                         <div class="stat-value-box">{stats['current_streak']}<span class="stat-unit">days</span></div>
                     </div>
+                    
                     <div class="stat-card">
                         <div class="stat-label">Longest Streak</div>
                         <div class="stat-value-box">{stats['longest_streak']}<span class="stat-unit">days</span></div>
                     </div>
+                    
                     <div class="stat-card">
                         <div class="stat-label">Largest Streak</div>
                         <div class="stat-value-box">{stats['largest_streak']}<span class="stat-unit">days</span></div>
                     </div>
                 </div>
                 
-                <!-- 底部打卡贡献卡片 -->
                 <div class="heatmap-card">
                     <div class="heatmap-title">Contribution Graph</div>
                     <div class="heatmap-subtitle">今年共阅读 {stats['this_year_days']} 天</div>
@@ -563,7 +630,7 @@ def generate_html(reading_data, output_file="index.html"):
     </div>
     
     <script>
-        // 原生 Tooltip 悬浮提示引擎
+        // 高性能原生 Tooltip 悬浮节点引擎
         document.querySelectorAll('.day-cell:not(.future)').forEach(cell => {{
             cell.addEventListener('mouseenter', (e) => {{
                 const rect = e.target.getBoundingClientRect();
@@ -593,14 +660,14 @@ def generate_html(reading_data, output_file="index.html"):
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(html)
     
-    print(f"✅ Dashboard v2 HTML generated: {output_file}")
+    print(f"✅ Enhanced Dashboard v2 HTML generated successfully: {output_file}")
 
 
 def main():
-    print("📖 Generating reading dashboard v2 based on creative_minimalist_reading_dashboard_v2.png...")
+    print("📖 Running Premium Dynamic Analytics Engine...")
     reading_data = load_reading_data()
     generate_html(reading_data)
-    print("✅ Done!")
+    print("🏁 Optimization Done!")
 
 
 if __name__ == "__main__":
