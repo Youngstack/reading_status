@@ -1,4 +1,4 @@
-"""Generate GitHub Dark Style Reading Dashboard v3.1 - Decoupled Data Sources Edition"""
+"""Generate GitHub Dark Style Reading Dashboard v3.2 - Decoupled Data & Active Tooltip Edition"""
 
 import json
 import os
@@ -51,7 +51,6 @@ def parse_only_clippings_for_library():
             
         book_title_raw = lines[0]
         
-        # 流式特征搜索定位元数据行
         meta_line = None
         clipping_text_start_idx = 2
         for i in range(1, len(lines)):
@@ -65,7 +64,6 @@ def parse_only_clippings_for_library():
             
         clipping_text = "\n".join(lines[clipping_text_start_idx:])
         
-        # 提取书名与作者
         author = "Unknown Author"
         book_title = book_title_raw
         author_match = re.search(r"\(([^)]+)\)$", book_title_raw)
@@ -73,7 +71,6 @@ def parse_only_clippings_for_library():
             author = author_match.group(1)
             book_title = book_title_raw[:author_match.start()].strip()
             
-        # 提取用于书籍内部排序的微时间戳
         date_str = "1970-01-01"
         zh_match = re.search(r"(\d{4})年(\d{1,2})月(\d{1,2})日", meta_line)
         if zh_match:
@@ -109,7 +106,6 @@ def parse_only_clippings_for_library():
             "text": clipping_text
         })
         
-    # 物理降序重排书籍资产
     return dict(sorted(books_dict.items(), key=lambda item: item[1]["last_read"], reverse=True))
 
 
@@ -125,7 +121,6 @@ def calculate_stats(reading_days):
     total_days = len(reading_days)
     current_year = now.year
     
-    # 精密复活原版年、月审计天数
     this_year_days = len([d for d in reading_days.keys() if d.startswith(str(current_year))])
     current_month_str = now.strftime("%Y-%m")
     this_month_days = len([d for d in reading_days.keys() if d.startswith(current_month_str)])
@@ -142,7 +137,6 @@ def calculate_stats(reading_days):
     today_str = now.strftime("%Y-%m-%d")
     yesterday_str = (now - timedelta(days=1)).strftime("%Y-%m-%d")
     
-    # 连续打卡计算（防爆兼容边界）
     current_streak = 0
     check_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
     
@@ -210,30 +204,34 @@ def generate_heatmap_data(reading_days):
 
 
 def generate_html(original_data, books_data, output_file=None):
-    """Generate HTML layout with unified card dimensions and complete 3x2 stats grid"""
+    """Generate HTML layout with active tooltip tracking and grid cards alignment"""
     
     now = datetime.now()
     month_en = now.strftime("%B").upper()
     day_num = now.day
     full_date_en = now.strftime("%B %d, %Y")
     
-    # 🍏 严格绑定：这里的热力图和指标，全部用原版官网 Cookie 导出的真实去重字典！
     reading_days = original_data.get("reading_days", {})
     
     stats = calculate_stats(reading_days)
     weeks = generate_heatmap_data(reading_days)
     
-    # 渲染热力图网格
+    # 🌟 修复点 1：补齐 title 属性，加入“· 已阅读”特征码，赋予原生 Tooltip 检索燃料
     heatmap_html = '<div class="heatmap-grid">\n'
     for week in weeks:
         for day in week:
             css_class = "day-cell"
             if day["is_future"]: css_class += " future"
             elif day["has_reading"]: css_class += " read"
-            heatmap_html += f'  <div class="{css_class}" title="{day["date"]}"></div>\n'
+            
+            # 构建高保真动态悬浮内容标签
+            tooltip_title = day["date"]
+            if day["has_reading"]:
+                tooltip_title += " · 已阅读"
+                
+            heatmap_html += f'  <div class="{css_class}" title="{tooltip_title}"></div>\n'
     heatmap_html += '</div>\n'
     
-    # 🍏 严格绑定：这里的书摘网格，完全使用独立解析 My Clippings.txt 得到的结果
     books_html = ""
     js_clippings_payload = {}
     
@@ -259,7 +257,6 @@ def generate_html(original_data, books_data, output_file=None):
             </div>
         </div>"""
 
-    # 优先采用亚马逊老文件记录的更新时间，防止 Actions 每次覆盖重刷
     last_updated = original_data.get("last_updated", now.strftime('%Y-%m-%d'))
     if " " in last_updated:
         last_updated = last_updated.split()[0]
@@ -269,7 +266,7 @@ def generate_html(original_data, books_data, output_file=None):
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Minimalist Reading Dashboard v3</title>
+    <title>Premium Minimalist Reading Dashboard v3.2</title>
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
         :root {{
@@ -324,14 +321,23 @@ def generate_html(original_data, books_data, output_file=None):
         .progress-container {{ width: 100%; height: 5px; background-color: #222428; border-radius: 3px; margin-top: auto; overflow: hidden; }}
         .progress-bar {{ height: 100%; background-color: var(--accent-green); border-radius: 3px; }}
         
-        .heatmap-card {{ background-color: var(--bg-card); border: 1px solid var(--border-default); border-radius: 16px; padding: 2rem; transition: all 0.25s ease; }}
+        .heatmap-card {{ background-color: var(--bg-card); border: 1px solid var(--border-default); border-radius: 16px; padding: 2rem; transition: all 0.25s ease; position: relative; }}
         .heatmap-card:hover {{ border-color: var(--accent-green); }}
         .heatmap-title {{ font-size: 1.15rem; font-weight: 600; margin-bottom: 0.2rem; }}
         .heatmap-subtitle {{ font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }}
         .heatmap-grid {{ display: grid; grid-template-columns: repeat(53, 1fr); grid-auto-flow: column; grid-template-rows: repeat(7, 1fr); gap: 4px; }}
-        .day-cell {{ width: 12px; height: 12px; background-color: #0a0b0d; border-radius: 3px; }}
+        
+        /* 单元格默认底色与动效定义 */
+        .day-cell {{ width: 12px; height: 12px; background-color: #111214; border-radius: 3px; transition: all 0.1s ease; cursor: pointer; }}
         .day-cell.read {{ background-color: var(--accent-green); }}
-        .day-cell.future {{ opacity: 0.15; }}
+        .day-cell.future {{ opacity: 0.15; cursor: default; }}
+        
+        /* 单元格悬浮选中时的外白边防爆框 */
+        .day-cell:not(.future):hover {{
+            outline: 2px solid var(--text-white);
+            outline-offset: -1px;
+            z-index: 50;
+        }}
         
         .library-section-container {{ margin-top: 2rem; }}
         .library-block-header {{ display: flex; align-items: center; gap: 0.6rem; font-size: 1.3rem; font-weight: 600; margin-bottom: 1.5rem; }}
@@ -370,7 +376,7 @@ def generate_html(original_data, books_data, output_file=None):
         .premium-book-author {{ font-size: 0.8rem; color: #8a8e94; margin-bottom: 0.4rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
         .premium-book-highlights-count {{ font-size: 0.75rem; font-weight: 700; color: var(--accent-green); letter-spacing: 0.5px; margin-top: auto; }}
         
-        /* Modal Window Box Drawer Styles */
+        /* 🌟 修复点 2：注入硬核工业级浮动 Tooltip 动态气泡定位样式 */
         .modal-overlay {{
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(5, 6, 8, 0.9); backdrop-filter: blur(10px);
@@ -407,14 +413,27 @@ def generate_html(original_data, books_data, output_file=None):
         .modal-footer-bar {{ padding: 1.2rem 2rem; border-top: 1px solid var(--border-default); display: flex; justify-content: flex-end; }}
         .modal-done-btn {{ background-color: var(--accent-green); color: #000000; font-weight: 700; border: none; padding: 0.6rem 2rem; border-radius: 8px; cursor: pointer; font-size: 0.95rem; }}
         
-        footer {{ text-align: center; margin-top: 3rem; color: var(--text-muted); font-size: 0.85rem; }}
-        .last-updated {{ margin-top: 0.6rem; font-size: 0.75rem; color: #3e4145; }}
+        /* 🌟 Tooltip 特效黑框组件底座 */
+        .custom-dashboard-tooltip {{
+            position: fixed;
+            background: #222428;
+            color: var(--text-white);
+            border: 1px solid #3a3d42;
+            padding: 6px 10px;
+            font-size: 11px;
+            border-radius: 6px;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 5000;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }}
     </style>
 </head>
 <body>
     <div class="dashboard-container">
         <header>
-            <h1>Creative Minimalist Reading Dashboard v3.1</h1>
+            <h1>Creative Minimalist Reading Dashboard v3.2</h1>
             <p class="description">A premium reading activity journal with decoupled data synchronization.</p>
         </header>
         
@@ -521,6 +540,32 @@ def generate_html(original_data, books_data, output_file=None):
             document.getElementById('clippingModal').classList.remove('active');
             document.body.style.overflow = '';
         }}
+        
+        // 🌟 修复点 3：全量激活 Tooltip 悬浮节点引擎逻辑，精准锁死物理定位
+        document.querySelectorAll('.day-cell:not(.future)').forEach(cell => {{
+            cell.addEventListener('mouseenter', (e) => {{
+                const rect = e.target.getBoundingClientRect();
+                const tooltip = document.createElement('div');
+                tooltip.className = 'custom-dashboard-tooltip';
+                tooltip.textContent = e.target.getAttribute('title');
+                
+                // 将浮动气泡优雅挂载至系统 Body 顶层
+                document.body.appendChild(tooltip);
+                
+                // 精准数学算力定位：卡片正上方居中 8px
+                tooltip.style.top = `${{rect.top + window.scrollY - tooltip.offsetHeight - 8}}px`;
+                tooltip.style.left = `${{rect.left + window.scrollX + (rect.width / 2) - (tooltip.offsetWidth / 2)}}px`;
+                
+                e.target._tooltip = tooltip;
+            }});
+            
+            cell.addEventListener('mouseleave', (e) => {{
+                if (e.target._tooltip) {{
+                    e.target._tooltip.remove();
+                    delete e.target._tooltip;
+                }}
+            }});
+        }});
     </script>
     <footer style="text-align: center; margin-top: 3rem; color: var(--text-muted); font-size: 0.85rem;">
         <p>Keep Reading · Keep Growing</p>
@@ -540,21 +585,15 @@ def generate_html(original_data, books_data, output_file=None):
         
     with open(str(output_path), "w", encoding="utf-8") as f:
         f.write(html)
-    print(f"🏁 V3.1 Decoupled Dashboard successfully compiled to: {output_path.resolve()}")
+    print(f"🏁 V3.2 Active Tooltip Dashboard compiled to: {output_path.resolve()}")
 
 
 def main():
-    print("📖 Initializing Decoupled Dual-Source Analytics Engine...")
-    
-    # 🍏 1. 严格读取亚马逊原始 Cookie 打卡数据
+    print("📖 Initializing Active Tooltip Engine...")
     original_reading_data = load_original_reading_data()
-    
-    # 🍏 2. 独立纯净解析本地 My Clippings.txt 书摘，绝不篡改/写入原本的 json
     books_data = parse_only_clippings_for_library()
-    
-    # 🍏 3. 双路归流，独立渲染
     generate_html(original_reading_data, books_data)
-    print("🏁 [OK] V3.1 Pipeline Data Decoupled Successfully!")
+    print("🏁 [OK] V3.2 Pipeline Compiled Perfect!")
 
 
 if __name__ == "__main__":
