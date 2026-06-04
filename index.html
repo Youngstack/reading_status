@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Minimalist Reading Dashboard v3</title>
+    <title>Premium Minimalist Reading Dashboard v3.2</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
@@ -58,14 +58,23 @@
         .progress-container { width: 100%; height: 5px; background-color: #222428; border-radius: 3px; margin-top: auto; overflow: hidden; }
         .progress-bar { height: 100%; background-color: var(--accent-green); border-radius: 3px; }
         
-        .heatmap-card { background-color: var(--bg-card); border: 1px solid var(--border-default); border-radius: 16px; padding: 2rem; transition: all 0.25s ease; }
+        .heatmap-card { background-color: var(--bg-card); border: 1px solid var(--border-default); border-radius: 16px; padding: 2rem; transition: all 0.25s ease; position: relative; }
         .heatmap-card:hover { border-color: var(--accent-green); }
         .heatmap-title { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.2rem; }
         .heatmap-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
         .heatmap-grid { display: grid; grid-template-columns: repeat(53, 1fr); grid-auto-flow: column; grid-template-rows: repeat(7, 1fr); gap: 4px; }
-        .day-cell { width: 12px; height: 12px; background-color: #0a0b0d; border-radius: 3px; }
+        
+        /* 单元格默认底色与动效定义 */
+        .day-cell { width: 12px; height: 12px; background-color: #111214; border-radius: 3px; transition: all 0.1s ease; cursor: pointer; }
         .day-cell.read { background-color: var(--accent-green); }
-        .day-cell.future { opacity: 0.15; }
+        .day-cell.future { opacity: 0.15; cursor: default; }
+        
+        /* 单元格悬浮选中时的外白边防爆框 */
+        .day-cell:not(.future):hover {
+            outline: 2px solid var(--text-white);
+            outline-offset: -1px;
+            z-index: 50;
+        }
         
         .library-section-container { margin-top: 2rem; }
         .library-block-header { display: flex; align-items: center; gap: 0.6rem; font-size: 1.3rem; font-weight: 600; margin-bottom: 1.5rem; }
@@ -104,7 +113,7 @@
         .premium-book-author { font-size: 0.8rem; color: #8a8e94; margin-bottom: 0.4rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .premium-book-highlights-count { font-size: 0.75rem; font-weight: 700; color: var(--accent-green); letter-spacing: 0.5px; margin-top: auto; }
         
-        /* Modal Window Box Drawer Styles */
+        /* 🌟 修复点 2：注入硬核工业级浮动 Tooltip 动态气泡定位样式 */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(5, 6, 8, 0.9); backdrop-filter: blur(10px);
@@ -141,14 +150,27 @@
         .modal-footer-bar { padding: 1.2rem 2rem; border-top: 1px solid var(--border-default); display: flex; justify-content: flex-end; }
         .modal-done-btn { background-color: var(--accent-green); color: #000000; font-weight: 700; border: none; padding: 0.6rem 2rem; border-radius: 8px; cursor: pointer; font-size: 0.95rem; }
         
-        footer { text-align: center; margin-top: 3rem; color: var(--text-muted); font-size: 0.85rem; }
-        .last-updated { margin-top: 0.6rem; font-size: 0.75rem; color: #3e4145; }
+        /* 🌟 Tooltip 特效黑框组件底座 */
+        .custom-dashboard-tooltip {
+            position: fixed;
+            background: #222428;
+            color: var(--text-white);
+            border: 1px solid #3a3d42;
+            padding: 6px 10px;
+            font-size: 11px;
+            border-radius: 6px;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 5000;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
     </style>
 </head>
 <body>
     <div class="dashboard-container">
         <header>
-            <h1>Creative Minimalist Reading Dashboard v3.1</h1>
+            <h1>Creative Minimalist Reading Dashboard v3.2</h1>
             <p class="description">A premium reading activity journal with decoupled data synchronization.</p>
         </header>
         
@@ -210,148 +232,148 @@
   <div class="day-cell" title="2026-01-10"></div>
   <div class="day-cell" title="2026-01-11"></div>
   <div class="day-cell" title="2026-01-12"></div>
-  <div class="day-cell read" title="2026-01-13"></div>
-  <div class="day-cell read" title="2026-01-14"></div>
-  <div class="day-cell read" title="2026-01-15"></div>
-  <div class="day-cell read" title="2026-01-16"></div>
-  <div class="day-cell read" title="2026-01-17"></div>
-  <div class="day-cell read" title="2026-01-18"></div>
-  <div class="day-cell read" title="2026-01-19"></div>
-  <div class="day-cell read" title="2026-01-20"></div>
-  <div class="day-cell read" title="2026-01-21"></div>
-  <div class="day-cell read" title="2026-01-22"></div>
-  <div class="day-cell read" title="2026-01-23"></div>
-  <div class="day-cell read" title="2026-01-24"></div>
-  <div class="day-cell read" title="2026-01-25"></div>
-  <div class="day-cell read" title="2026-01-26"></div>
-  <div class="day-cell read" title="2026-01-27"></div>
-  <div class="day-cell read" title="2026-01-28"></div>
-  <div class="day-cell read" title="2026-01-29"></div>
-  <div class="day-cell read" title="2026-01-30"></div>
-  <div class="day-cell read" title="2026-01-31"></div>
-  <div class="day-cell read" title="2026-02-01"></div>
-  <div class="day-cell read" title="2026-02-02"></div>
-  <div class="day-cell read" title="2026-02-03"></div>
-  <div class="day-cell read" title="2026-02-04"></div>
-  <div class="day-cell read" title="2026-02-05"></div>
+  <div class="day-cell read" title="2026-01-13 · 已阅读"></div>
+  <div class="day-cell read" title="2026-01-14 · 已阅读"></div>
+  <div class="day-cell read" title="2026-01-15 · 已阅读"></div>
+  <div class="day-cell read" title="2026-01-16 · 已阅读"></div>
+  <div class="day-cell read" title="2026-01-17 · 已阅读"></div>
+  <div class="day-cell read" title="2026-01-18 · 已阅读"></div>
+  <div class="day-cell read" title="2026-01-19 · 已阅读"></div>
+  <div class="day-cell read" title="2026-01-20 · 已阅读"></div>
+  <div class="day-cell read" title="2026-01-21 · 已阅读"></div>
+  <div class="day-cell read" title="2026-01-22 · 已阅读"></div>
+  <div class="day-cell read" title="2026-01-23 · 已阅读"></div>
+  <div class="day-cell read" title="2026-01-24 · 已阅读"></div>
+  <div class="day-cell read" title="2026-01-25 · 已阅读"></div>
+  <div class="day-cell read" title="2026-01-26 · 已阅读"></div>
+  <div class="day-cell read" title="2026-01-27 · 已阅读"></div>
+  <div class="day-cell read" title="2026-01-28 · 已阅读"></div>
+  <div class="day-cell read" title="2026-01-29 · 已阅读"></div>
+  <div class="day-cell read" title="2026-01-30 · 已阅读"></div>
+  <div class="day-cell read" title="2026-01-31 · 已阅读"></div>
+  <div class="day-cell read" title="2026-02-01 · 已阅读"></div>
+  <div class="day-cell read" title="2026-02-02 · 已阅读"></div>
+  <div class="day-cell read" title="2026-02-03 · 已阅读"></div>
+  <div class="day-cell read" title="2026-02-04 · 已阅读"></div>
+  <div class="day-cell read" title="2026-02-05 · 已阅读"></div>
   <div class="day-cell" title="2026-02-06"></div>
   <div class="day-cell" title="2026-02-07"></div>
   <div class="day-cell" title="2026-02-08"></div>
-  <div class="day-cell read" title="2026-02-09"></div>
-  <div class="day-cell read" title="2026-02-10"></div>
-  <div class="day-cell read" title="2026-02-11"></div>
-  <div class="day-cell read" title="2026-02-12"></div>
-  <div class="day-cell read" title="2026-02-13"></div>
-  <div class="day-cell read" title="2026-02-14"></div>
-  <div class="day-cell read" title="2026-02-15"></div>
-  <div class="day-cell read" title="2026-02-16"></div>
-  <div class="day-cell read" title="2026-02-17"></div>
+  <div class="day-cell read" title="2026-02-09 · 已阅读"></div>
+  <div class="day-cell read" title="2026-02-10 · 已阅读"></div>
+  <div class="day-cell read" title="2026-02-11 · 已阅读"></div>
+  <div class="day-cell read" title="2026-02-12 · 已阅读"></div>
+  <div class="day-cell read" title="2026-02-13 · 已阅读"></div>
+  <div class="day-cell read" title="2026-02-14 · 已阅读"></div>
+  <div class="day-cell read" title="2026-02-15 · 已阅读"></div>
+  <div class="day-cell read" title="2026-02-16 · 已阅读"></div>
+  <div class="day-cell read" title="2026-02-17 · 已阅读"></div>
   <div class="day-cell" title="2026-02-18"></div>
   <div class="day-cell" title="2026-02-19"></div>
   <div class="day-cell" title="2026-02-20"></div>
-  <div class="day-cell read" title="2026-02-21"></div>
-  <div class="day-cell read" title="2026-02-22"></div>
-  <div class="day-cell read" title="2026-02-23"></div>
-  <div class="day-cell read" title="2026-02-24"></div>
+  <div class="day-cell read" title="2026-02-21 · 已阅读"></div>
+  <div class="day-cell read" title="2026-02-22 · 已阅读"></div>
+  <div class="day-cell read" title="2026-02-23 · 已阅读"></div>
+  <div class="day-cell read" title="2026-02-24 · 已阅读"></div>
   <div class="day-cell" title="2026-02-25"></div>
   <div class="day-cell" title="2026-02-26"></div>
-  <div class="day-cell read" title="2026-02-27"></div>
-  <div class="day-cell read" title="2026-02-28"></div>
-  <div class="day-cell read" title="2026-03-01"></div>
-  <div class="day-cell read" title="2026-03-02"></div>
+  <div class="day-cell read" title="2026-02-27 · 已阅读"></div>
+  <div class="day-cell read" title="2026-02-28 · 已阅读"></div>
+  <div class="day-cell read" title="2026-03-01 · 已阅读"></div>
+  <div class="day-cell read" title="2026-03-02 · 已阅读"></div>
   <div class="day-cell" title="2026-03-03"></div>
-  <div class="day-cell read" title="2026-03-04"></div>
-  <div class="day-cell read" title="2026-03-05"></div>
-  <div class="day-cell read" title="2026-03-06"></div>
-  <div class="day-cell read" title="2026-03-07"></div>
-  <div class="day-cell read" title="2026-03-08"></div>
-  <div class="day-cell read" title="2026-03-09"></div>
-  <div class="day-cell read" title="2026-03-10"></div>
-  <div class="day-cell read" title="2026-03-11"></div>
-  <div class="day-cell read" title="2026-03-12"></div>
+  <div class="day-cell read" title="2026-03-04 · 已阅读"></div>
+  <div class="day-cell read" title="2026-03-05 · 已阅读"></div>
+  <div class="day-cell read" title="2026-03-06 · 已阅读"></div>
+  <div class="day-cell read" title="2026-03-07 · 已阅读"></div>
+  <div class="day-cell read" title="2026-03-08 · 已阅读"></div>
+  <div class="day-cell read" title="2026-03-09 · 已阅读"></div>
+  <div class="day-cell read" title="2026-03-10 · 已阅读"></div>
+  <div class="day-cell read" title="2026-03-11 · 已阅读"></div>
+  <div class="day-cell read" title="2026-03-12 · 已阅读"></div>
   <div class="day-cell" title="2026-03-13"></div>
-  <div class="day-cell read" title="2026-03-14"></div>
-  <div class="day-cell read" title="2026-03-15"></div>
-  <div class="day-cell read" title="2026-03-16"></div>
-  <div class="day-cell read" title="2026-03-17"></div>
+  <div class="day-cell read" title="2026-03-14 · 已阅读"></div>
+  <div class="day-cell read" title="2026-03-15 · 已阅读"></div>
+  <div class="day-cell read" title="2026-03-16 · 已阅读"></div>
+  <div class="day-cell read" title="2026-03-17 · 已阅读"></div>
   <div class="day-cell" title="2026-03-18"></div>
-  <div class="day-cell read" title="2026-03-19"></div>
+  <div class="day-cell read" title="2026-03-19 · 已阅读"></div>
   <div class="day-cell" title="2026-03-20"></div>
-  <div class="day-cell read" title="2026-03-21"></div>
+  <div class="day-cell read" title="2026-03-21 · 已阅读"></div>
   <div class="day-cell" title="2026-03-22"></div>
   <div class="day-cell" title="2026-03-23"></div>
   <div class="day-cell" title="2026-03-24"></div>
   <div class="day-cell" title="2026-03-25"></div>
   <div class="day-cell" title="2026-03-26"></div>
   <div class="day-cell" title="2026-03-27"></div>
-  <div class="day-cell read" title="2026-03-28"></div>
+  <div class="day-cell read" title="2026-03-28 · 已阅读"></div>
   <div class="day-cell" title="2026-03-29"></div>
-  <div class="day-cell read" title="2026-03-30"></div>
+  <div class="day-cell read" title="2026-03-30 · 已阅读"></div>
   <div class="day-cell" title="2026-03-31"></div>
   <div class="day-cell" title="2026-04-01"></div>
   <div class="day-cell" title="2026-04-02"></div>
-  <div class="day-cell read" title="2026-04-03"></div>
-  <div class="day-cell read" title="2026-04-04"></div>
+  <div class="day-cell read" title="2026-04-03 · 已阅读"></div>
+  <div class="day-cell read" title="2026-04-04 · 已阅读"></div>
   <div class="day-cell" title="2026-04-05"></div>
   <div class="day-cell" title="2026-04-06"></div>
   <div class="day-cell" title="2026-04-07"></div>
   <div class="day-cell" title="2026-04-08"></div>
-  <div class="day-cell read" title="2026-04-09"></div>
-  <div class="day-cell read" title="2026-04-10"></div>
-  <div class="day-cell read" title="2026-04-11"></div>
-  <div class="day-cell read" title="2026-04-12"></div>
-  <div class="day-cell read" title="2026-04-13"></div>
-  <div class="day-cell read" title="2026-04-14"></div>
-  <div class="day-cell read" title="2026-04-15"></div>
-  <div class="day-cell read" title="2026-04-16"></div>
-  <div class="day-cell read" title="2026-04-17"></div>
-  <div class="day-cell read" title="2026-04-18"></div>
-  <div class="day-cell read" title="2026-04-19"></div>
-  <div class="day-cell read" title="2026-04-20"></div>
-  <div class="day-cell read" title="2026-04-21"></div>
-  <div class="day-cell read" title="2026-04-22"></div>
-  <div class="day-cell read" title="2026-04-23"></div>
+  <div class="day-cell read" title="2026-04-09 · 已阅读"></div>
+  <div class="day-cell read" title="2026-04-10 · 已阅读"></div>
+  <div class="day-cell read" title="2026-04-11 · 已阅读"></div>
+  <div class="day-cell read" title="2026-04-12 · 已阅读"></div>
+  <div class="day-cell read" title="2026-04-13 · 已阅读"></div>
+  <div class="day-cell read" title="2026-04-14 · 已阅读"></div>
+  <div class="day-cell read" title="2026-04-15 · 已阅读"></div>
+  <div class="day-cell read" title="2026-04-16 · 已阅读"></div>
+  <div class="day-cell read" title="2026-04-17 · 已阅读"></div>
+  <div class="day-cell read" title="2026-04-18 · 已阅读"></div>
+  <div class="day-cell read" title="2026-04-19 · 已阅读"></div>
+  <div class="day-cell read" title="2026-04-20 · 已阅读"></div>
+  <div class="day-cell read" title="2026-04-21 · 已阅读"></div>
+  <div class="day-cell read" title="2026-04-22 · 已阅读"></div>
+  <div class="day-cell read" title="2026-04-23 · 已阅读"></div>
   <div class="day-cell" title="2026-04-24"></div>
   <div class="day-cell" title="2026-04-25"></div>
-  <div class="day-cell read" title="2026-04-26"></div>
-  <div class="day-cell read" title="2026-04-27"></div>
-  <div class="day-cell read" title="2026-04-28"></div>
-  <div class="day-cell read" title="2026-04-29"></div>
+  <div class="day-cell read" title="2026-04-26 · 已阅读"></div>
+  <div class="day-cell read" title="2026-04-27 · 已阅读"></div>
+  <div class="day-cell read" title="2026-04-28 · 已阅读"></div>
+  <div class="day-cell read" title="2026-04-29 · 已阅读"></div>
   <div class="day-cell" title="2026-04-30"></div>
   <div class="day-cell" title="2026-05-01"></div>
   <div class="day-cell" title="2026-05-02"></div>
   <div class="day-cell" title="2026-05-03"></div>
   <div class="day-cell" title="2026-05-04"></div>
-  <div class="day-cell read" title="2026-05-05"></div>
-  <div class="day-cell read" title="2026-05-06"></div>
-  <div class="day-cell read" title="2026-05-07"></div>
-  <div class="day-cell read" title="2026-05-08"></div>
-  <div class="day-cell read" title="2026-05-09"></div>
-  <div class="day-cell read" title="2026-05-10"></div>
-  <div class="day-cell read" title="2026-05-11"></div>
-  <div class="day-cell read" title="2026-05-12"></div>
-  <div class="day-cell read" title="2026-05-13"></div>
-  <div class="day-cell read" title="2026-05-14"></div>
-  <div class="day-cell read" title="2026-05-15"></div>
-  <div class="day-cell read" title="2026-05-16"></div>
-  <div class="day-cell read" title="2026-05-17"></div>
-  <div class="day-cell read" title="2026-05-18"></div>
-  <div class="day-cell read" title="2026-05-19"></div>
-  <div class="day-cell read" title="2026-05-20"></div>
-  <div class="day-cell read" title="2026-05-21"></div>
+  <div class="day-cell read" title="2026-05-05 · 已阅读"></div>
+  <div class="day-cell read" title="2026-05-06 · 已阅读"></div>
+  <div class="day-cell read" title="2026-05-07 · 已阅读"></div>
+  <div class="day-cell read" title="2026-05-08 · 已阅读"></div>
+  <div class="day-cell read" title="2026-05-09 · 已阅读"></div>
+  <div class="day-cell read" title="2026-05-10 · 已阅读"></div>
+  <div class="day-cell read" title="2026-05-11 · 已阅读"></div>
+  <div class="day-cell read" title="2026-05-12 · 已阅读"></div>
+  <div class="day-cell read" title="2026-05-13 · 已阅读"></div>
+  <div class="day-cell read" title="2026-05-14 · 已阅读"></div>
+  <div class="day-cell read" title="2026-05-15 · 已阅读"></div>
+  <div class="day-cell read" title="2026-05-16 · 已阅读"></div>
+  <div class="day-cell read" title="2026-05-17 · 已阅读"></div>
+  <div class="day-cell read" title="2026-05-18 · 已阅读"></div>
+  <div class="day-cell read" title="2026-05-19 · 已阅读"></div>
+  <div class="day-cell read" title="2026-05-20 · 已阅读"></div>
+  <div class="day-cell read" title="2026-05-21 · 已阅读"></div>
   <div class="day-cell" title="2026-05-22"></div>
-  <div class="day-cell read" title="2026-05-23"></div>
-  <div class="day-cell read" title="2026-05-24"></div>
-  <div class="day-cell read" title="2026-05-25"></div>
+  <div class="day-cell read" title="2026-05-23 · 已阅读"></div>
+  <div class="day-cell read" title="2026-05-24 · 已阅读"></div>
+  <div class="day-cell read" title="2026-05-25 · 已阅读"></div>
   <div class="day-cell" title="2026-05-26"></div>
-  <div class="day-cell read" title="2026-05-27"></div>
-  <div class="day-cell read" title="2026-05-28"></div>
-  <div class="day-cell read" title="2026-05-29"></div>
-  <div class="day-cell read" title="2026-05-30"></div>
-  <div class="day-cell read" title="2026-05-31"></div>
-  <div class="day-cell read" title="2026-06-01"></div>
-  <div class="day-cell read" title="2026-06-02"></div>
-  <div class="day-cell read" title="2026-06-03"></div>
+  <div class="day-cell read" title="2026-05-27 · 已阅读"></div>
+  <div class="day-cell read" title="2026-05-28 · 已阅读"></div>
+  <div class="day-cell read" title="2026-05-29 · 已阅读"></div>
+  <div class="day-cell read" title="2026-05-30 · 已阅读"></div>
+  <div class="day-cell read" title="2026-05-31 · 已阅读"></div>
+  <div class="day-cell read" title="2026-06-01 · 已阅读"></div>
+  <div class="day-cell read" title="2026-06-02 · 已阅读"></div>
+  <div class="day-cell read" title="2026-06-03 · 已阅读"></div>
   <div class="day-cell" title="2026-06-04"></div>
   <div class="day-cell future" title="2026-06-05"></div>
   <div class="day-cell future" title="2026-06-06"></div>
@@ -738,6 +760,32 @@
             document.getElementById('clippingModal').classList.remove('active');
             document.body.style.overflow = '';
         }
+        
+        // 🌟 修复点 3：全量激活 Tooltip 悬浮节点引擎逻辑，精准锁死物理定位
+        document.querySelectorAll('.day-cell:not(.future)').forEach(cell => {
+            cell.addEventListener('mouseenter', (e) => {
+                const rect = e.target.getBoundingClientRect();
+                const tooltip = document.createElement('div');
+                tooltip.className = 'custom-dashboard-tooltip';
+                tooltip.textContent = e.target.getAttribute('title');
+                
+                // 将浮动气泡优雅挂载至系统 Body 顶层
+                document.body.appendChild(tooltip);
+                
+                // 精准数学算力定位：卡片正上方居中 8px
+                tooltip.style.top = `${rect.top + window.scrollY - tooltip.offsetHeight - 8}px`;
+                tooltip.style.left = `${rect.left + window.scrollX + (rect.width / 2) - (tooltip.offsetWidth / 2)}px`;
+                
+                e.target._tooltip = tooltip;
+            });
+            
+            cell.addEventListener('mouseleave', (e) => {
+                if (e.target._tooltip) {
+                    e.target._tooltip.remove();
+                    delete e.target._tooltip;
+                }
+            });
+        });
     </script>
     <footer style="text-align: center; margin-top: 3rem; color: var(--text-muted); font-size: 0.85rem;">
         <p>Keep Reading · Keep Growing</p>
