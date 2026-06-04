@@ -1,4 +1,4 @@
-"""Generate GitHub Dark Style Reading Dashboard v3 - Premium Library & Zero Syntax Error Edition"""
+"""Generate GitHub Dark Style Reading Dashboard v3 - Fixed Grid & Full Stats Edition"""
 
 import json
 import os
@@ -19,7 +19,6 @@ def parse_clippings_to_json():
     reading_days = {}
     books_dict = {}
     
-    # 强制将可能传入的 Path 对象安全转换为标准字符串
     clippings_path = str(CLIPPINGS_FILE)
     reading_data_path = str(READING_DATA_FILE)
     
@@ -92,7 +91,6 @@ def parse_clippings_to_json():
                 "text": clipping_text
             })
             
-    # 按最后阅读时间对书籍资产库降序排序
     sorted_books = dict(sorted(books_dict.items(), key=lambda item: item[1]["last_read"], reverse=True))
     
     result = {
@@ -109,37 +107,43 @@ def parse_clippings_to_json():
 
 
 def calculate_stats(reading_days):
-    """Calculate reading statistics matching enhanced dashboard"""
+    """🌟 核心复活：完美对齐原先 3x2 看板的 6 大指标审计模型"""
     if not reading_days:
-        return {"total_days": 0, "this_year_days": 0, "this_month_days": 0, "last_month_days": 0, "current_streak": 0, "longest_streak": 0, "largest_streak": 0, "days_in_month": 30, "this_month_percent": 0}
+        return {
+            "total_days": 0, "this_year_days": 0, "this_month_days": 0, "last_month_days": 0,
+            "current_streak": 0, "longest_streak": 0, "largest_streak": 0, "days_in_month": 30, "this_month_percent": 0
+        }
     
     now = datetime.now()
     total_days = len(reading_days)
     current_year = now.year
     this_year_days = len([d for d in reading_days.keys() if d.startswith(str(current_year))])
     
+    # 1. 当月数据
     current_month_str = now.strftime("%Y-%m")
     this_month_days = len([d for d in reading_days.keys() if d.startswith(current_month_str)])
     
+    # 动态获取当前月份绝对物理总天数，计算进度条
     _, days_in_month = calendar.monthrange(now.year, now.month)
     this_month_percent = round((this_month_days / days_in_month) * 100, 1) if days_in_month > 0 else 0
     
+    # 2. 上月数据
     first_of_this_month = now.replace(day=1)
-    last_month_str = (first_of_this_month - timedelta(days=1)).strftime("%Y-%m")
+    last_day_of_last_month = first_of_this_month - timedelta(days=1)
+    last_month_str = last_day_of_last_month.strftime("%Y-%m")
     last_month_days = len([d for d in reading_days.keys() if d.startswith(last_month_str)])
     
     sorted_dates = sorted(reading_days.keys(), reverse=True)
     today_str = now.strftime("%Y-%m-%d")
     yesterday_str = (now - timedelta(days=1)).strftime("%Y-%m-%d")
     
+    # 3. 连续打卡风控风味逻辑（支持今天还没阅读时的安全回推）
     current_streak = 0
     check_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
     
-    # 🌟 核心BugFix：将原本有语法毒素的 && 物理清洗并平替为标准的 Python and 逻辑关键字
     if today_str not in reading_days and yesterday_str in reading_days:
         check_date = check_date - timedelta(days=1)
     elif today_str not in reading_days and yesterday_str not in reading_days:
-        current_streak = 0
         check_date = None
         
     if check_date:
@@ -147,6 +151,7 @@ def calculate_stats(reading_days):
             current_streak += 1
             check_date = check_date - timedelta(days=1)
             
+    # 4. 历史最长连续打卡与最大连续
     longest_streak = 0
     temp_streak = 0
     if sorted_dates:
@@ -170,7 +175,7 @@ def calculate_stats(reading_days):
         "last_month_days": last_month_days,
         "current_streak": current_streak,
         "longest_streak": longest_streak,
-        "largest_streak": longest_streak,
+        "largest_streak": longest_streak, # 保持物理逻辑统合
         "days_in_month": days_in_month,
         "this_month_percent": this_month_percent
     }
@@ -201,7 +206,7 @@ def generate_heatmap_data(reading_days):
 
 
 def generate_html(reading_data, output_file=None):
-    """Generate HTML layout with high-contrast text and interactive popups"""
+    """Generate HTML layout with unified card dimensions and complete 3x2 stats grid"""
     
     now = datetime.now()
     month_en = now.strftime("%B").upper()
@@ -244,8 +249,8 @@ def generate_html(reading_data, output_file=None):
                 <div class="book-cover-core-icon">📖</div>
             </div>
             <div class="book-info-panel">
-                <div class="premium-book-title">{title}</div>
-                <div class="premium-book-author">{info['author']}</div>
+                <div class="premium-book-title" title="{title}">{title}</div>
+                <div class="premium-book-author" title="{info['author']}">{info['author']}</div>
                 <div class="premium-book-highlights-count">❞ {info['count']} HIGHLIGHTS</div>
             </div>
         </div>"""
@@ -264,7 +269,7 @@ def generate_html(reading_data, output_file=None):
             --bg-main: #0a0b0d;
             --bg-card: #141619;
             --text-white: #ffffff;
-            --text-muted: #5a5e63;
+            --text-muted: #62676b;
             --accent-green: #3cd070;
             --border-default: #222428;
         }}
@@ -296,6 +301,8 @@ def generate_html(reading_data, output_file=None):
         .quote-meta {{ font-size: 0.8rem; color: var(--text-muted); line-height: 1.6; margin-top: 2rem; }}
         
         .right-layout {{ display: flex; flex-direction: column; gap: 1.5rem; }}
+        
+        /* 3×2 数据网格 - 强控完美还原布局 */
         .stats-grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }}
         .stat-card {{
             background-color: var(--bg-card); border: 1px solid var(--border-default); border-radius: 16px;
@@ -324,15 +331,26 @@ def generate_html(reading_data, output_file=None):
         .library-block-header {{ display: flex; align-items: center; gap: 0.6rem; font-size: 1.3rem; font-weight: 600; margin-bottom: 1.5rem; }}
         .library-block-header span.icon {{ color: var(--accent-green); }}
         
+        /* 1、书摘卡片强制尺寸一致 */
         .premium-library-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }}
-        .premium-book-item {{ cursor: pointer; transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); }}
+        
+        .premium-book-item {{ 
+            cursor: pointer; 
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+            display: flex;
+            flex-direction: column;
+            height: 380px; /* 🌟 物理硬管控：把整本书籍区块的高度死锁，彻底消除大有小 */
+        }}
         
         .book-cover-plate {{
-            width: 100%; aspect-ratio: 3 / 4; border-radius: 14px;
+            width: 100%; 
+            height: 260px; /* 🌟 物理死锁封面卡片高度 */
+            border-radius: 14px;
             background-color: #1a1d21; border: 1px solid var(--border-default);
             display: flex; align-items: center; justify-content: center;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative; overflow: hidden;
+            flex-shrink: 0;
         }}
         
         .premium-book-item:hover {{ transform: scale(1.03); }}
@@ -349,15 +367,44 @@ def generate_html(reading_data, output_file=None):
         .gradient-skin-3 {{ background: linear-gradient(135deg, #2a251b 0%, #141619 100%); }}
         .gradient-skin-4 {{ background: linear-gradient(135deg, #241c2d 0%, #141619 100%); }}
         
-        .book-info-panel {{ padding: 0.8rem 0.2rem; }}
-        .premium-book-title {{ font-size: 0.95rem; font-weight: 600; color: var(--text-white); margin-bottom: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
-        .premium-book-author {{ font-size: 0.8rem; color: #8a8e94; margin-bottom: 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
-        .premium-book-highlights-count {{ font-size: 0.75rem; font-weight: 700; color: var(--accent-green); letter-spacing: 0.5px; }}
+        /* 1、书摘说明排版强制文本截断 */
+        .book-info-panel {{ 
+            padding: 0.8rem 0.2rem 0 0.2rem; 
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            justify-content: flex-start;
+            overflow: hidden;
+        }}
+        /* 🌟 使用多行截断防御，不管书名多长，超过两行自动吐出省略号，死锁空间 */
+        .premium-book-title {{ 
+            font-size: 0.95rem; 
+            font-weight: 600; 
+            color: var(--text-white); 
+            margin-bottom: 0.2rem; 
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: normal;
+            line-height: 1.3;
+            height: 2.6em; /* 锁死双行高度占位，不管一行还是两行，底部标签绝对对齐 */
+        }}
+        .premium-book-author {{ 
+            font-size: 0.8rem; 
+            color: #8a8e94; 
+            margin-bottom: 0.4rem; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+        }}
+        .premium-book-highlights-count {{ font-size: 0.75rem; font-weight: 700; color: var(--accent-green); letter-spacing: 0.5px; margin-top: auto; }}
         
-        /* Modal Box Drawer Window Styles */
+        /* Modal Window Box Drawer Styles */
         .modal-overlay {{
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(5, 6, 8, 0.85); backdrop-filter: blur(8px);
+            background-color: rgba(5, 6, 8, 0.9); backdrop-filter: blur(10px);
             display: flex; align-items: center; justify-content: center;
             z-index: 2000; opacity: 0; pointer-events: none;
             transition: opacity 0.3s ease;
@@ -413,12 +460,31 @@ def generate_html(reading_data, output_file=None):
             
             <div class="right-layout">
                 <div class="stats-grid">
-                    <div class="stat-card"><div class="stat-label">Total Days</div><div class="stat-value-box">{stats['total_days']}<span class="stat-unit">days</span></div></div>
                     <div class="stat-card">
-                        <div class="stat-label">This Month</div><div class="stat-value-box">{stats['this_month_days']}<span class="stat-unit">days</span></div>
+                        <div class="stat-label">Total Days</div>
+                        <div class="stat-value-box">{stats['total_days']}<span class="stat-unit">days</span></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">This Month</div>
+                        <div class="stat-value-box">{stats['this_month_days']}<span class="stat-unit">days</span></div>
                         <div class="progress-container"><div class="progress-bar" style="width: {stats['this_month_percent']}%"></div></div>
                     </div>
-                    <div class="stat-card"><div class="stat-label">Last Month</div><div class="stat-value-box">{stats['last_month_days']}<span class="stat-unit">days</span></div></div>
+                    <div class="stat-card">
+                        <div class="stat-label">Last Month</div>
+                        <div class="stat-value-box">{stats['last_month_days']}<span class="stat-unit">days</span></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Current Streak</div>
+                        <div class="stat-value-box">{stats['current_streak']}<span class="stat-unit">days</span></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Longest Streak</div>
+                        <div class="stat-value-box">{stats['longest_streak']}<span class="stat-unit">days</span></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Largest Streak</div>
+                        <div class="stat-value-box">{stats['largest_streak']}<span class="stat-unit">days</span></div>
+                    </div>
                 </div>
                 
                 <div class="heatmap-card">
@@ -489,7 +555,6 @@ def generate_html(reading_data, output_file=None):
 </body>
 </html>"""
     
-    # 自动推导发布路径
     if output_file is None:
         try:
             project_root = Path(str(READING_DATA_FILE)).parent.parent
