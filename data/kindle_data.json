@@ -123,10 +123,16 @@
     "2026-06-23",
     "2026-06-27",
     "2026-07-06",
-    "2026-07-11"
+    "2026-07-11",
+    "2026-08-08"
   ],
   "current_daily_streak": {
-    "duration": 0
+    "duration": 1,
+    "readingMarketplace": 1,
+    "utcEndTime": "2026-08-08T07:00:00.000Z",
+    "start": "2026-08-08T00:00:00.000Z",
+    "end": "2026-08-08T00:00:00.000Z",
+    "ttl": 1786240200
   },
   "longest_daily_streak": {
     "duration": 24,
@@ -136,7 +142,12 @@
     "end": "2026-02-05T00:00:00.000Z"
   },
   "current_weekly_streak": {
-    "duration": 0
+    "duration": 1,
+    "readingMarketplace": 1,
+    "utcEndTime": "2026-08-08T07:00:00.000Z",
+    "start": "2026-08-08T00:00:00.000Z",
+    "end": "2026-08-08T00:00:00.000Z",
+    "ttl": 1786240200
   },
   "longest_weekly_streak": {
     "duration": 24,
@@ -145,7 +156,7 @@
     "start": "2026-01-13T00:00:00.000Z",
     "end": "2026-06-27T00:00:00.000Z"
   },
-  "current_weekly_streak_state": "inactive",
+  "current_weekly_streak_state": "active",
   "goal_info": {
     "goals": {
       "TITLES_READ_YEAR_2026": {
@@ -297,13 +308,13 @@
   "preferences": null,
   "urcGatingWeblabTreatment": "T1",
   "achievements_data": {
-    "daysLeftInCurrentChallenge": 54,
+    "daysLeftInCurrentChallenge": 53,
     "totalAvailableAchievements": 15,
     "totalEarnedAchievements": 1,
     "achievementsDisplayAttributes": [
       {
         "imageUrl": "https://m.media-amazon.com/images/G/01/RC/KindleAchievements2026SummerChallenge_HeadStart_b8ece1b7-5ffd-34be-b59f-94b55b28286c.png",
-        "quantity": 1,
+        "quantity": 2,
         "title": "Head Start",
         "isUnrevealedMysteryAchievement": false,
         "hasLevel": true
