@@ -134,16 +134,19 @@
     "2026-08-15",
     "2026-08-16",
     "2026-08-17",
+    "2026-08-18",
+    "2026-08-19",
     "2026-08-21",
-    "2026-08-22"
+    "2026-08-22",
+    "2026-08-23"
   ],
   "current_daily_streak": {
-    "duration": 2,
+    "duration": 3,
     "readingMarketplace": 1,
-    "utcEndTime": "2026-08-22T07:00:00.000Z",
+    "utcEndTime": "2026-08-23T07:00:00.000Z",
     "start": "2026-08-21T00:00:00.000Z",
-    "end": "2026-08-22T00:00:00.000Z",
-    "ttl": 1787448260
+    "end": "2026-08-23T00:00:00.000Z",
+    "ttl": 1787534507
   },
   "longest_daily_streak": {
     "duration": 24,
@@ -153,12 +156,12 @@
     "end": "2026-02-05T00:00:00.000Z"
   },
   "current_weekly_streak": {
-    "duration": 3,
+    "duration": 4,
     "readingMarketplace": 1,
-    "utcEndTime": "2026-08-22T07:00:00.000Z",
+    "utcEndTime": "2026-08-23T07:00:00.000Z",
     "start": "2026-08-08T00:00:00.000Z",
-    "end": "2026-08-22T00:00:00.000Z",
-    "ttl": 1787448260
+    "end": "2026-08-23T00:00:00.000Z",
+    "ttl": 1787534507
   },
   "longest_weekly_streak": {
     "duration": 24,
@@ -327,14 +330,14 @@
   "preferences": null,
   "urcGatingWeblabTreatment": "T1",
   "achievements_data": {
-    "daysLeftInCurrentChallenge": 39,
+    "daysLeftInCurrentChallenge": 38,
     "totalAvailableAchievements": 15,
-    "totalEarnedAchievements": 2,
+    "totalEarnedAchievements": 3,
     "achievementsDisplayAttributes": [
       {
-        "imageUrl": "https://m.media-amazon.com/images/G/01/RC/KindleAchievements2026SummerChallenge_Bookish_410baab2-3b9a-36a0-be78-e79abca4e216.png",
+        "imageUrl": "https://m.media-amazon.com/images/G/01/RC/KindleAchievements2026SummerChallenge_BronzeReader_8ed1c870-4c09-3c49-96ee-ed466578daf6.png",
         "quantity": 1,
-        "title": "Bookish",
+        "title": "Bronze Reader",
         "isUnrevealedMysteryAchievement": false,
         "hasLevel": false
       },
